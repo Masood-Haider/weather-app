@@ -295,7 +295,7 @@ const ThreeWeatherFX = (function() {
     scene.add(rainPoints);
   }
 
-  // 2. REALISTIC CRYSTALLINE SNOWFLAKE SYSTEM
+  // 2. REALISTIC CIRCULAR SNOWFLAKE SYSTEM
   function createSnowSystem() {
     const count = 1600;
     snowGeo = new THREE.BufferGeometry();
@@ -315,62 +315,25 @@ const ThreeWeatherFX = (function() {
     snowGeo.setAttribute("wander", new THREE.BufferAttribute(wander, 1));
     snowGeo.setAttribute("fallSpeed", new THREE.BufferAttribute(fallSpeeds, 1));
 
-    // High-Resolution 6-Branch Dendrite Crystalline Snowflake Texture
+    // Clean Soft-Edged Circular Snowflake Texture
     const canvas = document.createElement("canvas");
-    canvas.width = 64;
-    canvas.height = 64;
+    canvas.width = 32;
+    canvas.height = 32;
     const ctx = canvas.getContext("2d");
-    ctx.translate(32, 32);
-
-    // Subtle optical crystal core glow
-    const rad = ctx.createRadialGradient(0, 0, 0, 0, 0, 24);
-    rad.addColorStop(0, "rgba(255, 255, 255, 0.95)");
-    rad.addColorStop(0.35, "rgba(240, 248, 255, 0.65)");
-    rad.addColorStop(0.8, "rgba(240, 248, 255, 0.15)");
+    const rad = ctx.createRadialGradient(16, 16, 0, 16, 16, 14);
+    rad.addColorStop(0, "rgba(255, 255, 255, 1.0)");
+    rad.addColorStop(0.5, "rgba(255, 255, 255, 0.85)");
+    rad.addColorStop(0.85, "rgba(255, 255, 255, 0.3)");
     rad.addColorStop(1, "rgba(255, 255, 255, 0)");
     ctx.fillStyle = rad;
     ctx.beginPath();
-    ctx.arc(0, 0, 24, 0, Math.PI * 2);
+    ctx.arc(16, 16, 14, 0, Math.PI * 2);
     ctx.fill();
-
-    // 6-Point Dendritic Crystal Arms
-    ctx.strokeStyle = "rgba(255, 255, 255, 0.95)";
-    ctx.lineWidth = 1.6;
-    ctx.lineCap = "round";
-
-    for (let i = 0; i < 6; i++) {
-      ctx.save();
-      ctx.rotate((i * Math.PI) / 3);
-
-      // Main arm
-      ctx.beginPath();
-      ctx.moveTo(0, 0);
-      ctx.lineTo(0, 22);
-      ctx.stroke();
-
-      // Lower branches
-      ctx.beginPath();
-      ctx.moveTo(0, 7);
-      ctx.lineTo(5, 12);
-      ctx.moveTo(0, 7);
-      ctx.lineTo(-5, 12);
-      ctx.stroke();
-
-      // Upper branches
-      ctx.beginPath();
-      ctx.moveTo(0, 14);
-      ctx.lineTo(4, 18);
-      ctx.moveTo(0, 14);
-      ctx.lineTo(-4, 18);
-      ctx.stroke();
-
-      ctx.restore();
-    }
 
     const snowTex = new THREE.CanvasTexture(canvas);
 
     snowMaterial = new THREE.PointsMaterial({
-      size: 3.2,
+      size: 2.6,
       map: snowTex,
       transparent: true,
       opacity: 0,
@@ -471,7 +434,7 @@ const ThreeWeatherFX = (function() {
     scene.add(heatPoints);
   }
 
-  // 5. FREEZING FROST & ICE CRYSTAL DUST
+  // 5. FREEZING FROST & CIRCULAR ICE CRYSTAL DUST
   function createFrostSystem() {
     const count = 500;
     frostGeo = new THREE.BufferGeometry();
@@ -492,23 +455,18 @@ const ThreeWeatherFX = (function() {
     canvas.width = 32;
     canvas.height = 32;
     const ctx = canvas.getContext("2d");
-    // Crisp 4-point diamond sparkle
-    ctx.fillStyle = "#ffffff";
+    const rad = ctx.createRadialGradient(16, 16, 0, 16, 16, 12);
+    rad.addColorStop(0, "rgba(255, 255, 255, 1.0)");
+    rad.addColorStop(0.4, "rgba(255, 255, 255, 0.7)");
+    rad.addColorStop(1, "rgba(255, 255, 255, 0)");
+    ctx.fillStyle = rad;
     ctx.beginPath();
-    ctx.moveTo(16, 2);
-    ctx.lineTo(19, 13);
-    ctx.lineTo(30, 16);
-    ctx.lineTo(19, 19);
-    ctx.lineTo(16, 30);
-    ctx.lineTo(13, 19);
-    ctx.lineTo(2, 16);
-    ctx.lineTo(13, 13);
-    ctx.closePath();
+    ctx.arc(16, 16, 12, 0, Math.PI * 2);
     ctx.fill();
     const frostTex = new THREE.CanvasTexture(canvas);
 
     frostMaterial = new THREE.PointsMaterial({
-      size: 4.0,
+      size: 3.0,
       map: frostTex,
       transparent: true,
       opacity: 0,
