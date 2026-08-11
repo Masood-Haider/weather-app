@@ -664,15 +664,23 @@ const ThreeGlobe = (function() {
     const phi = (90 - lat) * (Math.PI / 180);
     const theta = (lng + 180) * (Math.PI / 180);
     const x = -(radius * Math.sin(phi) * Math.cos(theta));
-    const z = radius * Math.sin(phi) * Math.sin(theta);
     const y = radius * Math.cos(phi);
+    const z = radius * Math.sin(phi) * Math.sin(theta);
     return new THREE.Vector3(x, y, z);
   }
 
   function vector3ToLatLng(vector) {
     const norm = vector.clone().normalize();
-    const lat = 90 - (Math.acos(norm.y) * 180) / Math.PI;
-    const lng = ((270 + (Math.atan2(norm.x, norm.z) * 180) / Math.PI) % 360) - 180;
+    const phi = Math.acos(Math.max(-1, Math.min(1, norm.y)));
+    const lat = 90 - (phi * 180) / Math.PI;
+
+    let theta = Math.atan2(norm.z, -norm.x);
+    if (theta < 0) theta += Math.PI * 2;
+
+    let lng = (theta * 180) / Math.PI - 180;
+    if (lng > 180) lng -= 360;
+    if (lng < -180) lng += 360;
+
     return { lat, lng };
   }
 
@@ -690,19 +698,20 @@ const ThreeGlobe = (function() {
   }
 
   function flyTo(lat, lng) {
-    if (!controls) return;
+    if (!controls || !camera) return;
     isFlying = true;
     updatePinLocation(lat, lng);
 
-    const targetPos = latLngToVector3(lat, lng, 13.5);
+    const targetPos = latLngToVector3(lat, lng, 14.0);
     const startPos = camera.position.clone();
     const startTime = performance.now();
-    const duration = 1200;
+    const duration = 1000;
 
     function step(now) {
       const progress = Math.min(1, (now - startTime) / duration);
       const ease = progress < 0.5 ? 4 * progress * progress * progress : 1 - Math.pow(-2 * progress + 2, 3) / 2;
       camera.position.lerpVectors(startPos, targetPos, ease);
+      controls.target.set(0, 0, 0);
       controls.update();
 
       if (progress < 1) {
