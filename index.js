@@ -294,33 +294,33 @@ const ThreeWeatherFX = (function() {
 
   // 2. REALISTIC CIRCULAR SNOWFLAKE SYSTEM
   function createSnowSystem() {
-    const count = 2200;
+    const count = 2400;
     snowGeo = new THREE.BufferGeometry();
     const positions = new Float32Array(count * 3);
     const wander = new Float32Array(count);
     const fallSpeeds = new Float32Array(count);
 
     for (let i = 0; i < count; i++) {
-      positions[i * 3] = (Math.random() - 0.5) * 320;
-      positions[i * 3 + 1] = Math.random() * 200 - 100;
-      positions[i * 3 + 2] = (Math.random() - 0.5) * 150;
+      positions[i * 3] = (Math.random() - 0.5) * 340;
+      positions[i * 3 + 1] = Math.random() * 220 - 110;
+      positions[i * 3 + 2] = -20 + Math.random() * 80;
       wander[i] = Math.random() * Math.PI * 2;
-      fallSpeeds[i] = 0.55 + Math.random() * 0.65;
+      fallSpeeds[i] = 0.65 + Math.random() * 0.75;
     }
 
     snowGeo.setAttribute("position", new THREE.BufferAttribute(positions, 3));
     snowGeo.setAttribute("wander", new THREE.BufferAttribute(wander, 1));
     snowGeo.setAttribute("fallSpeed", new THREE.BufferAttribute(fallSpeeds, 1));
 
-    // High-Definition Soft Circular Snowflake Texture
+    // High-Definition Soft Circular Snowflake Texture with High Contrast
     const canvas = document.createElement("canvas");
     canvas.width = 64;
     canvas.height = 64;
     const ctx = canvas.getContext("2d");
     const rad = ctx.createRadialGradient(32, 32, 0, 32, 32, 30);
     rad.addColorStop(0, "rgba(255, 255, 255, 1.0)");
-    rad.addColorStop(0.5, "rgba(255, 255, 255, 0.9)");
-    rad.addColorStop(0.8, "rgba(255, 255, 255, 0.35)");
+    rad.addColorStop(0.5, "rgba(240, 248, 255, 0.95)");
+    rad.addColorStop(0.8, "rgba(215, 235, 255, 0.6)");
     rad.addColorStop(1, "rgba(255, 255, 255, 0)");
     ctx.fillStyle = rad;
     ctx.beginPath();
@@ -330,11 +330,11 @@ const ThreeWeatherFX = (function() {
     const snowTex = new THREE.CanvasTexture(canvas);
 
     snowMaterial = new THREE.PointsMaterial({
-      size: 4.8,
+      size: 5.8,
       map: snowTex,
       transparent: true,
       opacity: 0,
-      blending: THREE.AdditiveBlending,
+      blending: THREE.NormalBlending,
       depthWrite: false
     });
 
@@ -344,16 +344,16 @@ const ThreeWeatherFX = (function() {
 
   // 3. REALISTIC BLIZZARD & ICE NEEDLE GALE SYSTEM
   function createBlizzardSystem() {
-    const count = 2600;
+    const count = 2800;
     blizzardGeo = new THREE.BufferGeometry();
     const positions = new Float32Array(count * 3);
     const speeds = new Float32Array(count);
 
     for (let i = 0; i < count; i++) {
       positions[i * 3] = (Math.random() - 0.5) * 360;
-      positions[i * 3 + 1] = (Math.random() - 0.5) * 220;
-      positions[i * 3 + 2] = (Math.random() - 0.5) * 160;
-      speeds[i] = 5.5 + Math.random() * 7.0;
+      positions[i * 3 + 1] = (Math.random() - 0.5) * 240;
+      positions[i * 3 + 2] = -20 + Math.random() * 80;
+      speeds[i] = 6.0 + Math.random() * 8.0;
     }
 
     blizzardGeo.setAttribute("position", new THREE.BufferAttribute(positions, 3));
@@ -366,20 +366,20 @@ const ThreeWeatherFX = (function() {
     const ctx = canvas.getContext("2d");
     const grad = ctx.createLinearGradient(0, 8, 64, 8);
     grad.addColorStop(0, "rgba(255, 255, 255, 0)");
-    grad.addColorStop(0.3, "rgba(255, 255, 255, 0.5)");
+    grad.addColorStop(0.3, "rgba(230, 245, 255, 0.7)");
     grad.addColorStop(0.5, "rgba(255, 255, 255, 1.0)");
-    grad.addColorStop(0.7, "rgba(255, 255, 255, 0.5)");
+    grad.addColorStop(0.7, "rgba(230, 245, 255, 0.7)");
     grad.addColorStop(1, "rgba(255, 255, 255, 0)");
     ctx.fillStyle = grad;
-    ctx.fillRect(0, 5, 64, 6);
+    ctx.fillRect(0, 4, 64, 8);
     const blizTex = new THREE.CanvasTexture(canvas);
 
     blizzardMaterial = new THREE.PointsMaterial({
-      size: 5.2,
+      size: 5.6,
       map: blizTex,
       transparent: true,
       opacity: 0,
-      blending: THREE.AdditiveBlending,
+      blending: THREE.NormalBlending,
       depthWrite: false
     });
 
@@ -433,7 +433,7 @@ const ThreeWeatherFX = (function() {
     if (!isInitialized) return;
 
     const info = WEATHER_CODES[code] || { category: "clear" };
-    const temp = (temperature !== undefined && temperature !== null) ? temperature : 20;
+    const temp = (temperature !== undefined && temperature !== null) ? Number(temperature) : 20;
 
     // Reset atmospheric mode triggers
     isRain = false;
@@ -442,20 +442,20 @@ const ThreeWeatherFX = (function() {
     isStorm = false;
     isFog = false;
 
-    // 1. FREEZING COLD & SNOW CONDITIONS (Cold temp <= 3°C or any Snow/Freezing WMO codes)
-    const isFreezingOrSnow = temp <= 3 || 
+    // 1. FREEZING COLD & SNOW CONDITIONS (Cold temp <= 5°C or any Snow/Freezing WMO codes)
+    const isFreezingOrSnow = temp <= 5 || 
                              info.category === "snow" || 
                              code === 71 || code === 73 || code === 75 || code === 77 || code === 85 || code === 86 ||
                              code === 56 || code === 57 || code === 66 || code === 67;
 
     if (isFreezingOrSnow) {
-      if (code === 75 || code === 86 || (windSpeed || 0) > 26) {
+      if (code === 75 || code === 86 || (windSpeed || 0) > 24) {
         isBlizzard = true;
       } else {
         isSnow = true;
       }
     } 
-    // 2. RAIN & STORMS (Above Freezing > 3°C)
+    // 2. RAIN & STORMS (Above Freezing > 5°C)
     else if (info.category === "rain") {
       isRain = true;
     } else if (info.category === "thunderstorm") {
@@ -466,7 +466,7 @@ const ThreeWeatherFX = (function() {
     else if (info.category === "clouds" && (code === 45 || code === 48)) {
       isFog = true;
     }
-    // 4. WARM / SUNNY / SUMMER (temp > 3°C and clear/dry) -> All particle systems remain inactive (0 opacity)
+    // 4. WARM / SUNNY / SUMMER (temp > 5°C and clear/dry) -> Zero particles (0 opacity)
 
     // Wind tilt calculation
     const rad = ((windDeg || 0) * Math.PI) / 180;
