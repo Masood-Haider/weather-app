@@ -134,8 +134,8 @@ const dom = {
   layerPicker: document.getElementById("layer-picker"),
   mainDashboard: document.getElementById("main-dashboard"),
   hudSheetToggleBtn: document.getElementById("hud-sheet-toggle-btn"),
-  miniLocationFlag: document.getElementById("mini-location-flag"),
   miniLocationCity: document.getElementById("mini-location-city"),
+  miniElevationBadge: document.getElementById("mini-elevation-badge"),
   miniTempValue: document.getElementById("mini-temp-value"),
   miniWeatherCond: document.getElementById("mini-weather-cond"),
   toggleTextHint: document.querySelector(".toggle-text-hint"),
@@ -1813,8 +1813,8 @@ function renderWeatherDashboard() {
   dom.timezonePill.textContent = state.currentTimezone.replace(/_/g, " ");
 
   // Mini Retractable Header Summary
-  if (dom.miniLocationFlag) dom.miniLocationFlag.textContent = getFlagEmoji(state.currentCountryCode) || "📍";
   if (dom.miniLocationCity) dom.miniLocationCity.textContent = state.currentCity || "Selected Location";
+  if (dom.miniElevationBadge) dom.miniElevationBadge.textContent = `Elev: ${Math.round(state.currentElevation)}m`;
   if (dom.miniTempValue) dom.miniTempValue.textContent = `${formatTemp(current.temperature_2m)}°${state.unit}`;
   if (dom.miniWeatherCond) dom.miniWeatherCond.textContent = codeInfo.label;
 
@@ -2215,12 +2215,7 @@ function handleGeolocation() {
  * Utilities
  */
 function getFlagEmoji(countryCode) {
-  if (!countryCode || countryCode.length !== 2) return "📍";
-  const codePoints = countryCode
-    .toUpperCase()
-    .split("")
-    .map((char) => 127397 + char.charCodeAt(0));
-  return String.fromCodePoint(...codePoints);
+  return "📍";
 }
 
 function formatTemp(celsiusVal) {

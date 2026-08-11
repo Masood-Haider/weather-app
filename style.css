@@ -1409,10 +1409,39 @@ body.view-3d-mode .mode-toggle-btn {
 .hud-sheet-mini-info {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 6px;
   font-size: 13px;
   font-weight: 700;
   color: #ffffff;
+  min-width: 0;
+  overflow: hidden;
+}
+
+.hud-sheet-mini-info .mini-flag {
+  font-size: 14px;
+  flex-shrink: 0;
+}
+
+.hud-sheet-mini-info .mini-city {
+  font-family: var(--font-heading);
+  font-weight: 800;
+  color: #ffffff;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.hud-sheet-mini-info .mini-elev {
+  font-size: 9.5px;
+  font-family: var(--font-mono);
+  background: #242424;
+  border: 1px solid var(--border-card);
+  color: #ffffff;
+  padding: 1px 5px;
+  border-radius: 4px;
+  font-weight: 700;
+  white-space: nowrap;
+  flex-shrink: 0;
 }
 
 .hud-sheet-mini-info .mini-temp {
@@ -1420,14 +1449,20 @@ body.view-3d-mode .mode-toggle-btn {
   color: #ffffff;
   background: var(--bg-surface-elevated);
   border: 1px solid var(--border-card);
-  padding: 1px 6px;
+  padding: 1px 5px;
   border-radius: 4px;
+  font-weight: 800;
+  white-space: nowrap;
+  flex-shrink: 0;
 }
 
 .hud-sheet-mini-info .mini-cond {
   font-size: 11px;
   color: var(--text-secondary);
   font-weight: 500;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .hud-sheet-toggle-action {
@@ -1540,6 +1575,13 @@ body.view-3d-mode .mode-toggle-btn {
     max-width: 100%;
     transform: none;
     box-sizing: border-box;
+    overflow: visible !important;
+    height: auto !important;
+  }
+
+  .hud-left-pod .hud-pod-inner {
+    padding: 14px 14px;
+    overflow: visible;
   }
 
   .hud-bottom-deck {
