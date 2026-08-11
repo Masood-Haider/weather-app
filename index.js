@@ -1,6 +1,7 @@
 /**
  * ==========================================================================
- * WEATHER APP - MAXIMALIST REAL-TIME WORLD WEATHER ENGINE
+ * WEATHER APP - 3D METEOROLOGICAL ENGINE & LOCOMOTIVE SCROLL ARCHITECTURE
+ * Combining Three.js Atmospheric Systems, 3D Earth Globe & Smooth Inertia
  * ==========================================================================
  */
 
@@ -15,21 +16,24 @@ const state = {
   currentElevation: 44,
   weatherData: null,
   unit: "C", // 'C' or 'F'
-  activeTileLayerKey: "voyager", // Clean Voyager as default
+  activeTileLayerKey: "voyager",
+  viewMode: "2d", // '2d' (Leaflet) or '3d' (Three.js Globe)
+  isAudioActive: false,
   liveClockInterval: null,
   marker: null,
   searchDebounceTimer: null,
   activeSearchIndex: -1,
-  searchResults: []
+  searchResults: [],
+  autoRotateGlobe: true
 };
 
-// Tile Layer Configurations
+// Tile Layer Configurations for 2D Map
 const TILE_LAYERS = {
   voyager: {
     name: "Clean Voyager",
     url: "https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png",
     options: {
-      attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a>',
+      attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> &copy; <a href="https://carto.com/attributions">CARTO</a>',
       subdomains: "abcd",
       maxZoom: 19
     }
@@ -38,7 +42,7 @@ const TILE_LAYERS = {
     name: "Dark Matter",
     url: "https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png",
     options: {
-      attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a>',
+      attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> &copy; <a href="https://carto.com/attributions">CARTO</a>',
       subdomains: "abcd",
       maxZoom: 19
     }
@@ -55,34 +59,34 @@ const TILE_LAYERS = {
 
 // Weather Code Interpretation Map (WMO Standard)
 const WEATHER_CODES = {
-  0: { label: "Clear Sky", icon: "sun", glow: "rgba(245, 158, 11, 0.35)", status: "Clear & Sunny" },
-  1: { label: "Mainly Clear", icon: "sun-cloud", glow: "rgba(52, 211, 153, 0.35)", status: "Optimal Outdoor Conditions" },
-  2: { label: "Partly Cloudy", icon: "partly-cloudy", glow: "rgba(148, 163, 184, 0.3)", status: "Scattered Clouds" },
-  3: { label: "Overcast", icon: "cloudy", glow: "rgba(100, 116, 139, 0.35)", status: "Full Cloud Cover" },
-  45: { label: "Foggy", icon: "fog", glow: "rgba(148, 163, 184, 0.25)", status: "Reduced Visibility" },
-  48: { label: "Depositing Rime Fog", icon: "fog", glow: "rgba(148, 163, 184, 0.25)", status: "Icy Fog Hazard" },
-  51: { label: "Light Drizzle", icon: "drizzle", glow: "rgba(52, 211, 153, 0.35)", status: "Light Precipitation" },
-  53: { label: "Moderate Drizzle", icon: "drizzle", glow: "rgba(52, 211, 153, 0.4)", status: "Passing Drizzle" },
-  55: { label: "Dense Drizzle", icon: "drizzle", glow: "rgba(52, 211, 153, 0.45)", status: "Continuous Wet Mist" },
-  56: { label: "Light Freezing Drizzle", icon: "snow", glow: "rgba(186, 230, 253, 0.4)", status: "Icy Mist" },
-  57: { label: "Dense Freezing Drizzle", icon: "snow", glow: "rgba(186, 230, 253, 0.45)", status: "Slick Road Warning" },
-  61: { label: "Slight Rain", icon: "rain-light", glow: "rgba(52, 211, 153, 0.4)", status: "Light Rain Expected" },
-  63: { label: "Moderate Rain", icon: "rain", glow: "rgba(16, 185, 129, 0.45)", status: "Umbrella Recommended" },
-  65: { label: "Heavy Rain", icon: "rain-heavy", glow: "rgba(5, 150, 105, 0.55)", status: "Heavy Downpour" },
-  66: { label: "Light Freezing Rain", icon: "snow", glow: "rgba(147, 197, 253, 0.45)", status: "Freezing Rain Hazard" },
-  67: { label: "Heavy Freezing Rain", icon: "snow", glow: "rgba(147, 197, 253, 0.55)", status: "Severe Ice Formation" },
-  71: { label: "Slight Snow Fall", icon: "snow-light", glow: "rgba(224, 242, 254, 0.4)", status: "Light Flurries" },
-  73: { label: "Moderate Snow Fall", icon: "snow", glow: "rgba(224, 242, 254, 0.5)", status: "Snow Accumulation" },
-  75: { label: "Heavy Snow Fall", icon: "snow-heavy", glow: "rgba(255, 255, 255, 0.6)", status: "Heavy Snowfall Warning" },
-  77: { label: "Snow Grains", icon: "snow", glow: "rgba(224, 242, 254, 0.4)", status: "Frozen Grains" },
-  80: { label: "Slight Showers", icon: "rain-light", glow: "rgba(52, 211, 153, 0.4)", status: "Scattered Rain Showers" },
-  81: { label: "Moderate Showers", icon: "rain", glow: "rgba(16, 185, 129, 0.45)", status: "Passing Rain Cells" },
-  82: { label: "Violent Rain Showers", icon: "rain-heavy", glow: "rgba(5, 150, 105, 0.6)", status: "Torrential Showers" },
-  85: { label: "Slight Snow Showers", icon: "snow", glow: "rgba(224, 242, 254, 0.45)", status: "Passing Snow Bands" },
-  86: { label: "Heavy Snow Showers", icon: "snow-heavy", glow: "rgba(255, 255, 255, 0.6)", status: "Blizzard Conditions" },
-  95: { label: "Thunderstorm", icon: "thunderstorm", glow: "rgba(168, 85, 247, 0.5)", status: "Lightning Activity" },
-  96: { label: "Thunderstorm + Hail", icon: "thunderstorm", glow: "rgba(168, 85, 247, 0.55)", status: "Severe Storm with Hail" },
-  99: { label: "Heavy Thunderstorm", icon: "thunderstorm", glow: "rgba(244, 63, 94, 0.55)", status: "Severe Storm Warning" }
+  0: { label: "Clear Sky", icon: "sun", glow: "rgba(245, 158, 11, 0.35)", status: "Clear & Sunny", category: "clear" },
+  1: { label: "Mainly Clear", icon: "sun-cloud", glow: "rgba(52, 211, 153, 0.35)", status: "Optimal Outdoor Conditions", category: "clear" },
+  2: { label: "Partly Cloudy", icon: "partly-cloudy", glow: "rgba(148, 163, 184, 0.3)", status: "Scattered Clouds", category: "clouds" },
+  3: { label: "Overcast", icon: "cloudy", glow: "rgba(100, 116, 139, 0.35)", status: "Full Cloud Cover", category: "clouds" },
+  45: { label: "Foggy", icon: "fog", glow: "rgba(148, 163, 184, 0.25)", status: "Reduced Visibility", category: "clouds" },
+  48: { label: "Depositing Rime Fog", icon: "fog", glow: "rgba(148, 163, 184, 0.25)", status: "Icy Fog Hazard", category: "clouds" },
+  51: { label: "Light Drizzle", icon: "drizzle", glow: "rgba(52, 211, 153, 0.35)", status: "Light Precipitation", category: "rain" },
+  53: { label: "Moderate Drizzle", icon: "drizzle", glow: "rgba(52, 211, 153, 0.4)", status: "Passing Drizzle", category: "rain" },
+  55: { label: "Dense Drizzle", icon: "drizzle", glow: "rgba(52, 211, 153, 0.45)", status: "Continuous Wet Mist", category: "rain" },
+  56: { label: "Light Freezing Drizzle", icon: "snow", glow: "rgba(186, 230, 253, 0.4)", status: "Icy Mist", category: "snow" },
+  57: { label: "Dense Freezing Drizzle", icon: "snow", glow: "rgba(186, 230, 253, 0.45)", status: "Slick Road Warning", category: "snow" },
+  61: { label: "Slight Rain", icon: "rain-light", glow: "rgba(52, 211, 153, 0.4)", status: "Light Rain Expected", category: "rain" },
+  63: { label: "Moderate Rain", icon: "rain", glow: "rgba(16, 185, 129, 0.45)", status: "Umbrella Recommended", category: "rain" },
+  65: { label: "Heavy Rain", icon: "rain-heavy", glow: "rgba(5, 150, 105, 0.55)", status: "Heavy Downpour", category: "rain" },
+  66: { label: "Light Freezing Rain", icon: "snow", glow: "rgba(147, 197, 253, 0.45)", status: "Freezing Rain Hazard", category: "snow" },
+  67: { label: "Heavy Freezing Rain", icon: "snow", glow: "rgba(147, 197, 253, 0.55)", status: "Severe Ice Formation", category: "snow" },
+  71: { label: "Slight Snow Fall", icon: "snow-light", glow: "rgba(224, 242, 254, 0.4)", status: "Light Flurries", category: "snow" },
+  73: { label: "Moderate Snow Fall", icon: "snow", glow: "rgba(224, 242, 254, 0.5)", status: "Snow Accumulation", category: "snow" },
+  75: { label: "Heavy Snow Fall", icon: "snow-heavy", glow: "rgba(255, 255, 255, 0.6)", status: "Heavy Snowfall Warning", category: "snow" },
+  77: { label: "Snow Grains", icon: "snow", glow: "rgba(224, 242, 254, 0.4)", status: "Frozen Grains", category: "snow" },
+  80: { label: "Slight Showers", icon: "rain-light", glow: "rgba(52, 211, 153, 0.4)", status: "Scattered Rain Showers", category: "rain" },
+  81: { label: "Moderate Showers", icon: "rain", glow: "rgba(16, 185, 129, 0.45)", status: "Passing Rain Cells", category: "rain" },
+  82: { label: "Violent Rain Showers", icon: "rain-heavy", glow: "rgba(5, 150, 105, 0.6)", status: "Torrential Showers", category: "rain" },
+  85: { label: "Slight Snow Showers", icon: "snow", glow: "rgba(224, 242, 254, 0.45)", status: "Passing Snow Bands", category: "snow" },
+  86: { label: "Heavy Snow Showers", icon: "snow-heavy", glow: "rgba(255, 255, 255, 0.6)", status: "Blizzard Conditions", category: "snow" },
+  95: { label: "Thunderstorm", icon: "thunderstorm", glow: "rgba(168, 85, 247, 0.5)", status: "Lightning Activity", category: "thunderstorm" },
+  96: { label: "Thunderstorm + Hail", icon: "thunderstorm", glow: "rgba(168, 85, 247, 0.55)", status: "Severe Storm with Hail", category: "thunderstorm" },
+  99: { label: "Heavy Thunderstorm", icon: "thunderstorm", glow: "rgba(244, 63, 94, 0.55)", status: "Severe Storm Warning", category: "thunderstorm" }
 };
 
 // DOM References
@@ -91,6 +95,17 @@ let activeTileLayer = null;
 
 const dom = {
   map: document.getElementById("map"),
+  globeContainer: document.getElementById("globe-container"),
+  globeCanvas: document.getElementById("globe-canvas"),
+  weatherFxCanvas: document.getElementById("weather-fx-canvas"),
+  viewModeBtn: document.getElementById("view-mode-btn"),
+  viewModeLabel: document.getElementById("view-mode-label"),
+  audioFxBtn: document.getElementById("audio-fx-btn"),
+  audioBtnLabel: document.getElementById("audio-btn-label"),
+  globeAutoRotateBtn: document.getElementById("globe-autorotate-btn"),
+  globeResetBtn: document.getElementById("globe-reset-btn"),
+  globeCoordsHud: document.getElementById("globe-coords-hud"),
+  
   searchInput: document.getElementById("search-input"),
   searchResults: document.getElementById("search-results"),
   searchClearBtn: document.getElementById("search-clear-btn"),
@@ -100,6 +115,7 @@ const dom = {
   layerBtn: document.getElementById("layer-btn"),
   layerPicker: document.getElementById("layer-picker"),
   mainDashboard: document.getElementById("main-dashboard"),
+  weatherCardScrollBody: document.getElementById("weather-card-scroll-body"),
   minimizeBtn: document.getElementById("minimize-btn"),
   reopenBtn: document.getElementById("reopen-dashboard-btn"),
   brandHomeBtn: document.getElementById("brand-home-btn"),
@@ -132,6 +148,7 @@ const dom = {
   metricWind: document.getElementById("metric-wind"),
   windBarFill: document.getElementById("wind-bar-fill"),
   windDirectionSub: document.getElementById("wind-direction-sub"),
+  windCompassCanvas: document.getElementById("wind-3d-compass-canvas"),
 
   metricUv: document.getElementById("metric-uv"),
   uvBarFill: document.getElementById("uv-bar-fill"),
@@ -148,6 +165,7 @@ const dom = {
   sunSunriseTime: document.getElementById("sun-sunrise-time"),
   sunSunsetTime: document.getElementById("sun-sunset-time"),
   solarSunDot: document.getElementById("solar-sun-dot"),
+  solar3dCanvas: document.getElementById("solar-3d-canvas"),
 
   // Atmospheric Details Grid
   detailWindFull: document.getElementById("detail-wind-full"),
@@ -162,11 +180,1011 @@ const dom = {
 
 /**
  * ==========================================================================
- * INITIALIZATION
+ * 1. THREE.JS 3D ATMOSPHERIC WEATHER FX ENGINE
+ * ==========================================================================
+ */
+const ThreeWeatherFX = (function() {
+  let scene, camera, renderer;
+  let rainGeo, rainPoints, rainMaterial;
+  let snowGeo, snowPoints, snowMaterial;
+  let sunMesh, sunGlowMesh, sunParticles;
+  let cloudGroup;
+  let lightningLight, lightningTimer = 0;
+  let activeMode = "clear";
+  let windTilt = 0;
+  let windSpeedScalar = 1;
+  let isInitialized = false;
+
+  function init() {
+    const canvas = dom.weatherFxCanvas;
+    if (!canvas || typeof THREE === "undefined") return;
+
+    scene = new THREE.Scene();
+    camera = new THREE.PerspectiveCamera(60, window.innerWidth / window.innerHeight, 1, 1000);
+    camera.position.z = 100;
+
+    renderer = new THREE.WebGLRenderer({ canvas, alpha: true, antialias: true });
+    renderer.setSize(window.innerWidth, window.innerHeight);
+    renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+
+    // Lightning Flash Light
+    lightningLight = new THREE.PointLight(0xd8b4fe, 0, 800);
+    lightningLight.position.set(0, 100, 50);
+    scene.add(lightningLight);
+
+    // Setup Weather Particle Systems
+    createRainSystem();
+    createSnowSystem();
+    createSunSystem();
+    createCloudSystem();
+
+    window.addEventListener("resize", onResize);
+    isInitialized = true;
+    animate();
+  }
+
+  function createRainSystem() {
+    const count = 2200;
+    rainGeo = new THREE.BufferGeometry();
+    const positions = new Float32Array(count * 3);
+    const velocities = new Float32Array(count);
+
+    for (let i = 0; i < count; i++) {
+      positions[i * 3] = (Math.random() - 0.5) * 300;
+      positions[i * 3 + 1] = Math.random() * 200 - 100;
+      positions[i * 3 + 2] = (Math.random() - 0.5) * 150;
+      velocities[i] = 2.5 + Math.random() * 3.5;
+    }
+
+    rainGeo.setAttribute("position", new THREE.BufferAttribute(positions, 3));
+    rainGeo.setAttribute("velocity", new THREE.BufferAttribute(velocities, 1));
+
+    // Rain drop texture
+    const canvas = document.createElement("canvas");
+    canvas.width = 16;
+    canvas.height = 32;
+    const ctx = canvas.getContext("2d");
+    const grad = ctx.createLinearGradient(8, 0, 8, 32);
+    grad.addColorStop(0, "rgba(56, 189, 248, 0)");
+    grad.addColorStop(1, "rgba(52, 211, 153, 0.85)");
+    ctx.fillStyle = grad;
+    ctx.fillRect(6, 0, 4, 32);
+    const rainTex = new THREE.CanvasTexture(canvas);
+
+    rainMaterial = new THREE.PointsMaterial({
+      size: 3.5,
+      map: rainTex,
+      transparent: true,
+      opacity: 0,
+      blending: THREE.AdditiveBlending,
+      depthWrite: false
+    });
+
+    rainPoints = new THREE.Points(rainGeo, rainMaterial);
+    scene.add(rainPoints);
+  }
+
+  function createSnowSystem() {
+    const count = 1400;
+    snowGeo = new THREE.BufferGeometry();
+    const positions = new Float32Array(count * 3);
+    const wander = new Float32Array(count);
+
+    for (let i = 0; i < count; i++) {
+      positions[i * 3] = (Math.random() - 0.5) * 300;
+      positions[i * 3 + 1] = Math.random() * 200 - 100;
+      positions[i * 3 + 2] = (Math.random() - 0.5) * 150;
+      wander[i] = Math.random() * Math.PI * 2;
+    }
+
+    snowGeo.setAttribute("position", new THREE.BufferAttribute(positions, 3));
+    snowGeo.setAttribute("wander", new THREE.BufferAttribute(wander, 1));
+
+    // Snowflake texture
+    const canvas = document.createElement("canvas");
+    canvas.width = 32;
+    canvas.height = 32;
+    const ctx = canvas.getContext("2d");
+    const radGrad = ctx.createRadialGradient(16, 16, 0, 16, 16, 16);
+    radGrad.addColorStop(0, "rgba(255, 255, 255, 0.95)");
+    radGrad.addColorStop(0.5, "rgba(224, 242, 254, 0.5)");
+    radGrad.addColorStop(1, "rgba(255, 255, 255, 0)");
+    ctx.fillStyle = radGrad;
+    ctx.beginPath();
+    ctx.arc(16, 16, 16, 0, Math.PI * 2);
+    ctx.fill();
+    const snowTex = new THREE.CanvasTexture(canvas);
+
+    snowMaterial = new THREE.PointsMaterial({
+      size: 4.5,
+      map: snowTex,
+      transparent: true,
+      opacity: 0,
+      blending: THREE.AdditiveBlending,
+      depthWrite: false
+    });
+
+    snowPoints = new THREE.Points(snowGeo, snowMaterial);
+    scene.add(snowPoints);
+  }
+
+  function createSunSystem() {
+    const sunGroup = new THREE.Group();
+
+    // 3D Sun Sphere
+    const sunGeo = new THREE.SphereGeometry(14, 32, 32);
+    const sunMat = new THREE.MeshBasicMaterial({
+      color: 0xfbbf24,
+      transparent: true,
+      opacity: 0
+    });
+    sunMesh = new THREE.Mesh(sunGeo, sunMat);
+    sunMesh.position.set(90, 55, -20);
+    sunGroup.add(sunMesh);
+
+    // Sun Glow Halo
+    const glowGeo = new THREE.SphereGeometry(24, 32, 32);
+    const glowMat = new THREE.MeshBasicMaterial({
+      color: 0xf59e0b,
+      transparent: true,
+      opacity: 0,
+      side: THREE.BackSide,
+      blending: THREE.AdditiveBlending
+    });
+    sunGlowMesh = new THREE.Mesh(glowGeo, glowMat);
+    sunGlowMesh.position.copy(sunMesh.position);
+    sunGroup.add(sunGlowMesh);
+
+    // Warm Sun Photons
+    const photonCount = 400;
+    const photonGeo = new THREE.BufferGeometry();
+    const photonPos = new Float32Array(photonCount * 3);
+    for (let i = 0; i < photonCount; i++) {
+      photonPos[i * 3] = (Math.random() - 0.5) * 300;
+      photonPos[i * 3 + 1] = (Math.random() - 0.5) * 200;
+      photonPos[i * 3 + 2] = (Math.random() - 0.5) * 100;
+    }
+    photonGeo.setAttribute("position", new THREE.BufferAttribute(photonPos, 3));
+    const photonMat = new THREE.PointsMaterial({
+      size: 2.5,
+      color: 0xfde047,
+      transparent: true,
+      opacity: 0,
+      blending: THREE.AdditiveBlending
+    });
+    sunParticles = new THREE.Points(photonGeo, photonMat);
+    sunGroup.add(sunParticles);
+
+    scene.add(sunGroup);
+  }
+
+  function createCloudSystem() {
+    cloudGroup = new THREE.Group();
+    const cloudMat = new THREE.MeshBasicMaterial({
+      color: 0x94a3b8,
+      transparent: true,
+      opacity: 0,
+      depthWrite: false
+    });
+
+    for (let i = 0; i < 18; i++) {
+      const puffGeo = new THREE.SphereGeometry(15 + Math.random() * 20, 16, 16);
+      const puff = new THREE.Mesh(puffGeo, cloudMat);
+      puff.position.set(
+        (Math.random() - 0.5) * 280,
+        30 + Math.random() * 50,
+        (Math.random() - 0.5) * 80
+      );
+      puff.scale.set(1.6, 0.7, 1);
+      cloudGroup.add(puff);
+    }
+    scene.add(cloudGroup);
+  }
+
+  function updateWeather(code, isDay, windSpeed, windDeg, cloudCover) {
+    if (!isInitialized) return;
+
+    const info = WEATHER_CODES[code] || { category: "clear" };
+    activeMode = info.category;
+
+    // Wind tilt calculation
+    const rad = ((windDeg || 0) * Math.PI) / 180;
+    windTilt = Math.sin(rad) * 0.8;
+    windSpeedScalar = Math.max(0.5, (windSpeed || 15) / 15);
+
+    // Apply atmospheric body theme
+    document.body.classList.remove("theme-clear", "theme-rain", "theme-snow", "theme-thunder");
+    if (activeMode === "thunderstorm") document.body.classList.add("theme-thunder");
+    else if (activeMode === "rain") document.body.classList.add("theme-rain");
+    else if (activeMode === "snow") document.body.classList.add("theme-snow");
+    else document.body.classList.add("theme-clear");
+  }
+
+  function animate() {
+    requestAnimationFrame(animate);
+
+    const targetRainOp = (activeMode === "rain" || activeMode === "thunderstorm") ? 0.75 : 0;
+    const targetSnowOp = (activeMode === "snow") ? 0.85 : 0;
+    const targetSunOp = (activeMode === "clear") ? 0.8 : 0;
+    const targetCloudOp = (activeMode === "clouds" || activeMode === "rain" || activeMode === "thunderstorm") ? 0.22 : 0;
+
+    // Smooth opacity lerping
+    rainMaterial.opacity += (targetRainOp - rainMaterial.opacity) * 0.05;
+    snowMaterial.opacity += (targetSnowOp - snowMaterial.opacity) * 0.05;
+    sunMesh.material.opacity += (targetSunOp - sunMesh.material.opacity) * 0.05;
+    sunGlowMesh.material.opacity += (targetSunOp * 0.4 - sunGlowMesh.material.opacity) * 0.05;
+    sunParticles.material.opacity += (targetSunOp * 0.5 - sunParticles.material.opacity) * 0.05;
+
+    cloudGroup.children.forEach(puff => {
+      puff.material.opacity += (targetCloudOp - puff.material.opacity) * 0.05;
+      puff.position.x += 0.04 * windSpeedScalar;
+      if (puff.position.x > 160) puff.position.x = -160;
+    });
+
+    // Rain Simulation
+    if (rainMaterial.opacity > 0.01) {
+      const positions = rainGeo.attributes.position.array;
+      const velocities = rainGeo.attributes.velocity.array;
+      for (let i = 0; i < positions.length / 3; i++) {
+        positions[i * 3 + 1] -= velocities[i] * windSpeedScalar;
+        positions[i * 3] += windTilt * 1.5;
+        if (positions[i * 3 + 1] < -100) {
+          positions[i * 3 + 1] = 100;
+          positions[i * 3] = (Math.random() - 0.5) * 300;
+        }
+      }
+      rainGeo.attributes.position.needsUpdate = true;
+    }
+
+    // Snow Simulation
+    if (snowMaterial.opacity > 0.01) {
+      const positions = snowGeo.attributes.position.array;
+      const wander = snowGeo.attributes.wander.array;
+      for (let i = 0; i < positions.length / 3; i++) {
+        wander[i] += 0.02;
+        positions[i * 3 + 1] -= 0.6 * windSpeedScalar;
+        positions[i * 3] += Math.sin(wander[i]) * 0.4 + windTilt * 0.5;
+        positions[i * 3 + 2] += Math.cos(wander[i]) * 0.3;
+        if (positions[i * 3 + 1] < -100) {
+          positions[i * 3 + 1] = 100;
+          positions[i * 3] = (Math.random() - 0.5) * 300;
+        }
+      }
+      snowGeo.attributes.position.needsUpdate = true;
+    }
+
+    // Sun Photons Float
+    if (sunParticles.material.opacity > 0.01) {
+      const positions = sunParticles.geometry.attributes.position.array;
+      for (let i = 0; i < positions.length / 3; i++) {
+        positions[i * 3 + 1] += 0.15;
+        if (positions[i * 3 + 1] > 100) positions[i * 3 + 1] = -100;
+      }
+      sunParticles.geometry.attributes.position.needsUpdate = true;
+    }
+
+    // Thunderstorm Lightning Flash
+    if (activeMode === "thunderstorm") {
+      lightningTimer++;
+      if (lightningTimer > 180 && Math.random() < 0.04) {
+        lightningLight.intensity = 18 + Math.random() * 15;
+        if (state.isAudioActive) ProceduralAudio.triggerThunder();
+        lightningTimer = 0;
+      } else {
+        lightningLight.intensity *= 0.82;
+      }
+    } else {
+      lightningLight.intensity = 0;
+    }
+
+    renderer.render(scene, camera);
+  }
+
+  function onResize() {
+    if (!camera || !renderer) return;
+    camera.aspect = window.innerWidth / window.innerHeight;
+    camera.updateProjectionMatrix();
+    renderer.setSize(window.innerWidth, window.innerHeight);
+  }
+
+  return { init, updateWeather };
+})();
+
+/**
+ * ==========================================================================
+ * 2. THREE.JS INTERACTIVE 3D EARTH GLOBE ENGINE
+ * ==========================================================================
+ */
+const ThreeGlobe = (function() {
+  let scene, camera, renderer, controls;
+  let earthMesh, cloudMesh, atmosphereMesh;
+  let cityPinGroup, pinPulseRing;
+  let isInitialized = false;
+  let targetRotation = { x: 0, y: 0 };
+  let isFlying = false;
+  let raycaster, mouse;
+
+  function init() {
+    const canvas = dom.globeCanvas;
+    if (!canvas || typeof THREE === "undefined") return;
+
+    scene = new THREE.Scene();
+    camera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 0.1, 1000);
+    camera.position.set(0, 0, 16);
+
+    renderer = new THREE.WebGLRenderer({ canvas, antialias: true, alpha: true });
+    renderer.setSize(window.innerWidth, window.innerHeight);
+    renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+
+    // OrbitControls
+    if (typeof THREE.OrbitControls !== "undefined") {
+      controls = new THREE.OrbitControls(camera, canvas);
+      controls.enableDamping = true;
+      controls.dampingFactor = 0.05;
+      controls.minDistance = 7.5;
+      controls.maxDistance = 35;
+      controls.rotateSpeed = 0.6;
+      controls.autoRotate = state.autoRotateGlobe;
+      controls.autoRotateSpeed = 0.7;
+    }
+
+    raycaster = new THREE.Raycaster();
+    mouse = new THREE.Vector2();
+
+    // Lighting
+    const ambientLight = new THREE.AmbientLight(0x223344, 1.2);
+    scene.add(ambientLight);
+
+    const sunLight = new THREE.DirectionalLight(0xffffff, 2.2);
+    sunLight.position.set(20, 10, 20);
+    scene.add(sunLight);
+
+    // Stars Background Field
+    createStarfield();
+
+    // 3D Earth Mesh with High-Detail Procedural Texture
+    createEarth();
+
+    // City Pin Beacon
+    createCityPin();
+
+    // Event Listeners
+    canvas.addEventListener("click", onGlobeClick);
+    window.addEventListener("resize", onResize);
+
+    isInitialized = true;
+    animate();
+  }
+
+  function createStarfield() {
+    const starCount = 1000;
+    const starGeo = new THREE.BufferGeometry();
+    const starPos = new Float32Array(starCount * 3);
+    for (let i = 0; i < starCount; i++) {
+      starPos[i * 3] = (Math.random() - 0.5) * 800;
+      starPos[i * 3 + 1] = (Math.random() - 0.5) * 800;
+      starPos[i * 3 + 2] = (Math.random() - 0.5) * 800;
+    }
+    starGeo.setAttribute("position", new THREE.BufferAttribute(starPos, 3));
+    const starMat = new THREE.PointsMaterial({
+      color: 0x94a3b8,
+      size: 1.5,
+      transparent: true,
+      opacity: 0.6
+    });
+    scene.add(new THREE.Points(starGeo, starMat));
+  }
+
+  function createEarth() {
+    // Generate Procedural High-Res Earth Texture
+    const mapCanvas = document.createElement("canvas");
+    mapCanvas.width = 2048;
+    mapCanvas.height = 1024;
+    const ctx = mapCanvas.getContext("2d");
+
+    // Deep Ocean
+    const oceanGrad = ctx.createLinearGradient(0, 0, 0, 1024);
+    oceanGrad.addColorStop(0, "#081b33");
+    oceanGrad.addColorStop(0.5, "#0b2545");
+    oceanGrad.addColorStop(1, "#081b33");
+    ctx.fillStyle = oceanGrad;
+    ctx.fillRect(0, 0, 2048, 1024);
+
+    // Grid lines (lat/long)
+    ctx.strokeStyle = "rgba(56, 189, 248, 0.08)";
+    ctx.lineWidth = 1;
+    for (let x = 0; x <= 2048; x += 128) {
+      ctx.beginPath();
+      ctx.moveTo(x, 0);
+      ctx.lineTo(x, 1024);
+      ctx.stroke();
+    }
+    for (let y = 0; y <= 1024; y += 64) {
+      ctx.beginPath();
+      ctx.moveTo(0, y);
+      ctx.lineTo(2048, y);
+      ctx.stroke();
+    }
+
+    // Continents silhouette approximation
+    ctx.fillStyle = "#1e3a5f";
+    drawContinents(ctx);
+
+    const earthTexture = new THREE.CanvasTexture(mapCanvas);
+
+    // Earth Sphere Geometry
+    const earthGeo = new THREE.SphereGeometry(5, 64, 64);
+    const earthMat = new THREE.MeshStandardMaterial({
+      map: earthTexture,
+      roughness: 0.7,
+      metalness: 0.1
+    });
+    earthMesh = new THREE.Mesh(earthGeo, earthMat);
+    scene.add(earthMesh);
+
+    // Cloud Layer
+    const cloudCanvas = document.createElement("canvas");
+    cloudCanvas.width = 1024;
+    cloudCanvas.height = 512;
+    const cctx = cloudCanvas.getContext("2d");
+    cctx.fillStyle = "rgba(0,0,0,0)";
+    cctx.fillRect(0, 0, 1024, 512);
+    cctx.fillStyle = "rgba(255, 255, 255, 0.35)";
+    for (let i = 0; i < 40; i++) {
+      cctx.beginPath();
+      cctx.arc(Math.random() * 1024, Math.random() * 512, 30 + Math.random() * 60, 0, Math.PI * 2);
+      cctx.fill();
+    }
+    const cloudTex = new THREE.CanvasTexture(cloudCanvas);
+
+    const cloudGeo = new THREE.SphereGeometry(5.08, 64, 64);
+    const cloudMat = new THREE.MeshStandardMaterial({
+      map: cloudTex,
+      transparent: true,
+      opacity: 0.5,
+      blending: THREE.AdditiveBlending
+    });
+    cloudMesh = new THREE.Mesh(cloudGeo, cloudMat);
+    scene.add(cloudMesh);
+
+    // Atmospheric Fresnel Rim Glow
+    const atmosGeo = new THREE.SphereGeometry(5.3, 64, 64);
+    const atmosMat = new THREE.ShaderMaterial({
+      vertexShader: `
+        varying vec3 vNormal;
+        void main() {
+          vNormal = normalize(normalMatrix * normal);
+          gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
+        }
+      `,
+      fragmentShader: `
+        varying vec3 vNormal;
+        void main() {
+          float intensity = pow(0.65 - dot(vNormal, vec3(0, 0, 1.0)), 2.5);
+          gl_FragColor = vec4(0.2, 0.75, 0.95, 1.0) * intensity;
+        }
+      `,
+      blending: THREE.AdditiveBlending,
+      side: THREE.BackSide,
+      transparent: true
+    });
+    atmosphereMesh = new THREE.Mesh(atmosGeo, atmosMat);
+    scene.add(atmosphereMesh);
+  }
+
+  function drawContinents(ctx) {
+    // Continental Landmasses
+    ctx.fillStyle = "#1e3a5f";
+    // North America
+    ctx.beginPath();
+    ctx.ellipse(450, 300, 220, 140, 0.2, 0, Math.PI * 2);
+    ctx.fill();
+    // South America
+    ctx.beginPath();
+    ctx.ellipse(620, 650, 130, 200, -0.2, 0, Math.PI * 2);
+    ctx.fill();
+    // Eurasia
+    ctx.beginPath();
+    ctx.ellipse(1350, 320, 380, 180, -0.1, 0, Math.PI * 2);
+    ctx.fill();
+    // Africa
+    ctx.beginPath();
+    ctx.ellipse(1100, 560, 160, 200, 0.1, 0, Math.PI * 2);
+    ctx.fill();
+    // Australia
+    ctx.beginPath();
+    ctx.ellipse(1650, 720, 130, 90, 0, 0, Math.PI * 2);
+    ctx.fill();
+  }
+
+  function createCityPin() {
+    cityPinGroup = new THREE.Group();
+
+    // Beacon Core
+    const pinGeo = new THREE.SphereGeometry(0.16, 16, 16);
+    const pinMat = new THREE.MeshBasicMaterial({ color: 0x34d399 });
+    const pin = new THREE.Mesh(pinGeo, pinMat);
+    cityPinGroup.add(pin);
+
+    // Glowing Beacon Line
+    const lineGeo = new THREE.CylinderGeometry(0.02, 0.02, 0.8, 8);
+    const lineMat = new THREE.MeshBasicMaterial({ color: 0x34d399, transparent: true, opacity: 0.8 });
+    const line = new THREE.Mesh(lineGeo, lineMat);
+    line.position.y = 0.4;
+    cityPinGroup.add(line);
+
+    // Pulsing Ring
+    const ringGeo = new THREE.RingGeometry(0.18, 0.28, 32);
+    const ringMat = new THREE.MeshBasicMaterial({
+      color: 0x34d399,
+      side: THREE.DoubleSide,
+      transparent: true,
+      opacity: 0.8
+    });
+    pinPulseRing = new THREE.Mesh(ringGeo, ringMat);
+    pinPulseRing.rotation.x = Math.PI / 2;
+    cityPinGroup.add(pinPulseRing);
+
+    scene.add(cityPinGroup);
+    updatePinLocation(state.currentLat, state.currentLng);
+  }
+
+  function latLngToVector3(lat, lng, radius) {
+    const phi = (90 - lat) * (Math.PI / 180);
+    const theta = (lng + 180) * (Math.PI / 180);
+    const x = -(radius * Math.sin(phi) * Math.cos(theta));
+    const z = radius * Math.sin(phi) * Math.sin(theta);
+    const y = radius * Math.cos(phi);
+    return new THREE.Vector3(x, y, z);
+  }
+
+  function vector3ToLatLng(vector) {
+    const norm = vector.clone().normalize();
+    const lat = 90 - (Math.acos(norm.y) * 180) / Math.PI;
+    const lng = ((270 + (Math.atan2(norm.x, norm.z) * 180) / Math.PI) % 360) - 180;
+    return { lat, lng };
+  }
+
+  function updatePinLocation(lat, lng) {
+    if (!cityPinGroup) return;
+    const pos = latLngToVector3(lat, lng, 5.12);
+    cityPinGroup.position.copy(pos);
+    cityPinGroup.quaternion.setFromUnitVectors(new THREE.Vector3(0, 1, 0), pos.clone().normalize());
+
+    if (dom.globeCoordsHud) {
+      const latStr = `${Math.abs(lat).toFixed(2)}° ${lat >= 0 ? 'N' : 'S'}`;
+      const lngStr = `${Math.abs(lng).toFixed(2)}° ${lng >= 0 ? 'E' : 'W'}`;
+      dom.globeCoordsHud.textContent = `${latStr}, ${lngStr}`;
+    }
+  }
+
+  function flyTo(lat, lng) {
+    if (!controls) return;
+    isFlying = true;
+    updatePinLocation(lat, lng);
+
+    const targetPos = latLngToVector3(lat, lng, 14);
+    const startPos = camera.position.clone();
+    const startTime = performance.now();
+    const duration = 1200;
+
+    function step(now) {
+      const progress = Math.min(1, (now - startTime) / duration);
+      const ease = progress < 0.5 ? 4 * progress * progress * progress : 1 - Math.pow(-2 * progress + 2, 3) / 2;
+      camera.position.lerpVectors(startPos, targetPos, ease);
+      controls.update();
+
+      if (progress < 1) {
+        requestAnimationFrame(step);
+      } else {
+        isFlying = false;
+      }
+    }
+    requestAnimationFrame(step);
+  }
+
+  function onGlobeClick(event) {
+    if (isFlying || !camera || !renderer) return;
+
+    const rect = dom.globeCanvas.getBoundingClientRect();
+    mouse.x = ((event.clientX - rect.left) / rect.width) * 2 - 1;
+    mouse.y = -((event.clientY - rect.top) / rect.height) * 2 + 1;
+
+    raycaster.setFromCamera(mouse, camera);
+    const intersects = raycaster.intersectObject(earthMesh);
+
+    if (intersects.length > 0) {
+      const point = intersects[0].point;
+      const { lat, lng } = vector3ToLatLng(point);
+      showToast(`3D Globe: Loading ${lat.toFixed(2)}°, ${lng.toFixed(2)}°...`);
+      fetchLocationAndWeather(lat, lng, { reverseGeocode: true });
+    }
+  }
+
+  function toggleAutoRotate() {
+    state.autoRotateGlobe = !state.autoRotateGlobe;
+    if (controls) controls.autoRotate = state.autoRotateGlobe;
+    if (dom.globeAutoRotateBtn) {
+      dom.globeAutoRotateBtn.classList.toggle("active", state.autoRotateGlobe);
+    }
+    showToast(`3D Globe Auto-Spin: ${state.autoRotateGlobe ? "Enabled" : "Paused"}`);
+  }
+
+  function animate() {
+    requestAnimationFrame(animate);
+
+    if (cloudMesh) cloudMesh.rotation.y += 0.0006;
+
+    if (pinPulseRing) {
+      const scale = 1 + (Math.sin(performance.now() * 0.005) + 1) * 0.5;
+      pinPulseRing.scale.set(scale, scale, scale);
+    }
+
+    if (controls) controls.update();
+    renderer.render(scene, camera);
+  }
+
+  function onResize() {
+    if (!camera || !renderer) return;
+    camera.aspect = window.innerWidth / window.innerHeight;
+    camera.updateProjectionMatrix();
+    renderer.setSize(window.innerWidth, window.innerHeight);
+  }
+
+  return { init, updatePinLocation, flyTo, toggleAutoRotate };
+})();
+
+/**
+ * ==========================================================================
+ * 3. THREE.JS 3D MICRO-WIDGETS (WIND GYROSCOPE & SOLAR ARC)
+ * ==========================================================================
+ */
+const ThreeWidgets = (function() {
+  let windScene, windCamera, windRenderer, windNeedle;
+  let solarScene, solarCamera, solarRenderer, solarSun, solarMoon;
+
+  function init() {
+    initWindGyro();
+    initSolarArc();
+  }
+
+  function initWindGyro() {
+    const canvas = dom.windCompassCanvas;
+    if (!canvas || typeof THREE === "undefined") return;
+
+    windScene = new THREE.Scene();
+    windCamera = new THREE.PerspectiveCamera(45, 1, 0.1, 100);
+    windCamera.position.set(0, 0, 5);
+
+    windRenderer = new THREE.WebGLRenderer({ canvas, alpha: true, antialias: true });
+    windRenderer.setSize(52, 52);
+    windRenderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+
+    // Outer Ring Bezel
+    const ringGeo = new THREE.RingGeometry(1.6, 1.85, 32);
+    const ringMat = new THREE.MeshBasicMaterial({ color: 0x38bdf8, side: THREE.DoubleSide });
+    const ring = new THREE.Mesh(ringGeo, ringMat);
+    windScene.add(ring);
+
+    // 3D Compass Magnetic Needle
+    const needleGroup = new THREE.Group();
+
+    const northGeo = new THREE.ConeGeometry(0.35, 1.4, 16);
+    const northMat = new THREE.MeshBasicMaterial({ color: 0x34d399 });
+    const north = new THREE.Mesh(northGeo, northMat);
+    north.position.y = 0.7;
+    needleGroup.add(north);
+
+    const southGeo = new THREE.ConeGeometry(0.35, 1.4, 16);
+    const southMat = new THREE.MeshBasicMaterial({ color: 0x64748b });
+    const south = new THREE.Mesh(southGeo, southMat);
+    south.position.y = -0.7;
+    south.rotation.x = Math.PI;
+    needleGroup.add(south);
+
+    windNeedle = needleGroup;
+    windScene.add(windNeedle);
+
+    animateWind();
+  }
+
+  function animateWind() {
+    requestAnimationFrame(animateWind);
+    if (windRenderer && windScene && windCamera) {
+      windRenderer.render(windScene, windCamera);
+    }
+  }
+
+  function updateWindDirection(deg) {
+    if (!windNeedle) return;
+    const rad = -((deg || 0) * Math.PI) / 180;
+    windNeedle.rotation.z = rad;
+  }
+
+  function initSolarArc() {
+    const canvas = dom.solar3dCanvas;
+    if (!canvas || typeof THREE === "undefined") return;
+
+    solarScene = new THREE.Scene();
+    solarCamera = new THREE.PerspectiveCamera(50, 220 / 74, 0.1, 100);
+    solarCamera.position.set(0, 0, 6);
+
+    solarRenderer = new THREE.WebGLRenderer({ canvas, alpha: true, antialias: true });
+    solarRenderer.setSize(220, 74);
+    solarRenderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+
+    // 3D Glowing Sun
+    const sunGeo = new THREE.SphereGeometry(0.42, 24, 24);
+    const sunMat = new THREE.MeshBasicMaterial({ color: 0xfbbf24 });
+    solarSun = new THREE.Mesh(sunGeo, sunMat);
+    solarScene.add(solarSun);
+
+    // 3D Moon
+    const moonGeo = new THREE.SphereGeometry(0.36, 24, 24);
+    const moonMat = new THREE.MeshBasicMaterial({ color: 0xa7f3d0 });
+    solarMoon = new THREE.Mesh(moonGeo, moonMat);
+    solarMoon.position.set(0, -10, 0); // hidden initially
+    solarScene.add(solarMoon);
+
+    animateSolar();
+  }
+
+  function animateSolar() {
+    requestAnimationFrame(animateSolar);
+    if (solarRenderer && solarScene && solarCamera) {
+      solarRenderer.render(solarScene, solarCamera);
+    }
+  }
+
+  function updateSolarPosition(progress, isDayTime) {
+    if (!solarSun || !solarMoon) return;
+    // Parabolic Arc: X in [-2.2, 2.2], Y follows parabola
+    const clampedProg = Math.max(0, Math.min(1, progress));
+    const x = (clampedProg - 0.5) * 4.4;
+    const y = Math.sin(clampedProg * Math.PI) * 1.5 - 0.2;
+
+    if (isDayTime) {
+      solarSun.position.set(x, y, 0);
+      solarMoon.position.set(0, -10, 0);
+    } else {
+      solarMoon.position.set(x, y, 0);
+      solarSun.position.set(0, -10, 0);
+    }
+  }
+
+  return { init, updateWindDirection, updateSolarPosition };
+})();
+
+/**
+ * ==========================================================================
+ * 4. PROCEDURAL WEB AUDIO ENGINE (ZERO-ASSET WEATHER SOUNDSCAPES)
+ * ==========================================================================
+ */
+const ProceduralAudio = (function() {
+  let audioCtx = null;
+  let masterGain = null;
+  let rainNode = null;
+  let windNode = null;
+  let padNode = null;
+
+  function init() {
+    if (audioCtx) return;
+    try {
+      const AudioContext = window.AudioContext || window.webkitAudioContext;
+      audioCtx = new AudioContext();
+      masterGain = audioCtx.createGain();
+      masterGain.gain.setValueAtTime(0.3, audioCtx.currentTime);
+      masterGain.connect(audioCtx.destination);
+    } catch (e) {
+      console.warn("Web Audio API not supported", e);
+    }
+  }
+
+  function toggle() {
+    init();
+    if (!audioCtx) return;
+
+    if (audioCtx.state === "suspended") {
+      audioCtx.resume();
+    }
+
+    state.isAudioActive = !state.isAudioActive;
+    if (dom.audioFxBtn) {
+      dom.audioFxBtn.classList.toggle("active", state.isAudioActive);
+    }
+
+    if (state.isAudioActive) {
+      updateSoundscape();
+      showToast("🔊 Atmospheric Sound FX: Enabled");
+    } else {
+      stopAll();
+      showToast("🔇 Atmospheric Sound FX: Muted");
+    }
+  }
+
+  function updateSoundscape() {
+    if (!state.isAudioActive || !audioCtx || !state.weatherData) return;
+    stopAll();
+
+    const code = state.weatherData.current?.weather_code || 0;
+    const info = WEATHER_CODES[code] || { category: "clear" };
+
+    if (info.category === "rain" || info.category === "thunderstorm") {
+      startRainSound();
+    } else if (info.category === "snow" || (state.weatherData.current?.wind_speed_10m || 0) > 25) {
+      startWindSound();
+    } else {
+      startSunnyPadSound();
+    }
+  }
+
+  function startRainSound() {
+    if (!audioCtx) return;
+    // Generate pink/brown noise
+    const bufferSize = audioCtx.sampleRate * 2;
+    const buffer = audioCtx.createBuffer(1, bufferSize, audioCtx.sampleRate);
+    const data = buffer.getChannelData(0);
+    let lastOut = 0.0;
+    for (let i = 0; i < bufferSize; i++) {
+      const white = Math.random() * 2 - 1;
+      data[i] = (lastOut + 0.02 * white) / 1.02;
+      lastOut = data[i];
+      data[i] *= 3.5;
+    }
+
+    const noise = audioCtx.createBufferSource();
+    noise.buffer = buffer;
+    noise.loop = true;
+
+    const filter = audioCtx.createBiquadFilter();
+    filter.type = "lowpass";
+    filter.frequency.setValueAtTime(800, audioCtx.currentTime);
+
+    const gain = audioCtx.createGain();
+    gain.gain.setValueAtTime(0.15, audioCtx.currentTime);
+
+    noise.connect(filter);
+    filter.connect(gain);
+    gain.connect(masterGain);
+    noise.start();
+    rainNode = { source: noise, gain };
+  }
+
+  function startWindSound() {
+    if (!audioCtx) return;
+    const bufferSize = audioCtx.sampleRate * 2;
+    const buffer = audioCtx.createBuffer(1, bufferSize, audioCtx.sampleRate);
+    const data = buffer.getChannelData(0);
+    for (let i = 0; i < bufferSize; i++) {
+      data[i] = Math.random() * 2 - 1;
+    }
+
+    const noise = audioCtx.createBufferSource();
+    noise.buffer = buffer;
+    noise.loop = true;
+
+    const filter = audioCtx.createBiquadFilter();
+    filter.type = "bandpass";
+    filter.frequency.setValueAtTime(450, audioCtx.currentTime);
+    filter.Q.setValueAtTime(3.0, audioCtx.currentTime);
+
+    const gain = audioCtx.createGain();
+    gain.gain.setValueAtTime(0.12, audioCtx.currentTime);
+
+    noise.connect(filter);
+    filter.connect(gain);
+    gain.connect(masterGain);
+    noise.start();
+    windNode = { source: noise, gain };
+  }
+
+  function startSunnyPadSound() {
+    if (!audioCtx) return;
+    const osc = audioCtx.createOscillator();
+    osc.type = "sine";
+    osc.frequency.setValueAtTime(220, audioCtx.currentTime); // A3
+
+    const gain = audioCtx.createGain();
+    gain.gain.setValueAtTime(0.04, audioCtx.currentTime);
+
+    osc.connect(gain);
+    gain.connect(masterGain);
+    osc.start();
+    padNode = { source: osc, gain };
+  }
+
+  function triggerThunder() {
+    if (!audioCtx || !state.isAudioActive) return;
+    const osc = audioCtx.createOscillator();
+    osc.type = "sawtooth";
+    osc.frequency.setValueAtTime(55, audioCtx.currentTime);
+    osc.frequency.exponentialRampToValueAtTime(20, audioCtx.currentTime + 1.2);
+
+    const gain = audioCtx.createGain();
+    gain.gain.setValueAtTime(0.4, audioCtx.currentTime);
+    gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 1.5);
+
+    osc.connect(gain);
+    gain.connect(masterGain);
+    osc.start();
+    osc.stop(audioCtx.currentTime + 1.6);
+  }
+
+  function stopAll() {
+    if (rainNode) {
+      try { rainNode.source.stop(); } catch (e) {}
+      rainNode = null;
+    }
+    if (windNode) {
+      try { windNode.source.stop(); } catch (e) {}
+      windNode = null;
+    }
+    if (padNode) {
+      try { padNode.source.stop(); } catch (e) {}
+      padNode = null;
+    }
+  }
+
+  return { init, toggle, updateSoundscape, triggerThunder };
+})();
+
+/**
+ * ==========================================================================
+ * 5. LOCOMOTIVE SCROLL INERTIA CONTROLLER
+ * ==========================================================================
+ */
+const LocomotiveController = (function() {
+  let locoScroll = null;
+
+  function init() {
+    const scrollContainer = dom.weatherCardScrollBody;
+    if (!scrollContainer || typeof LocomotiveScroll === "undefined") return;
+
+    try {
+      locoScroll = new LocomotiveScroll({
+        el: scrollContainer,
+        smooth: true,
+        inertia: 0.8,
+        multiplier: 1.0,
+        tablet: { smooth: true },
+        smartphone: { smooth: false }
+      });
+
+      locoScroll.on("scroll", (args) => {
+        // Tie scroll progress to solar time scrubbing
+        if (args.currentElements && args.currentElements["solar-section"]) {
+          const progress = args.currentElements["solar-section"].progress;
+          ThreeWidgets.updateSolarPosition(progress, true);
+        }
+      });
+    } catch (e) {
+      console.warn("Locomotive Scroll initialization fallback:", e);
+    }
+  }
+
+  function update() {
+    if (locoScroll) {
+      setTimeout(() => {
+        locoScroll.update();
+      }, 250);
+    }
+  }
+
+  return { init, update };
+})();
+
+/**
+ * ==========================================================================
+ * 6. INITIALIZATION & CONTROLLER
  * ==========================================================================
  */
 function init() {
   initMap();
+  ThreeWeatherFX.init();
+  ThreeGlobe.init();
+  ThreeWidgets.init();
+  LocomotiveController.init();
+
   setupEventListeners();
   setupKeyboardShortcuts();
 
@@ -180,7 +1198,7 @@ function init() {
 }
 
 /**
- * Initialize Leaflet Map with Clean Voyager as default
+ * Initialize Leaflet Map
  */
 function initMap() {
   mapInstance = L.map("map", {
@@ -192,10 +1210,8 @@ function initMap() {
     worldCopyJump: true
   });
 
-  // Default to Clean Voyager layer
   setTileLayer("voyager");
 
-  // Custom Animated Pulse Marker
   const customIcon = L.divIcon({
     className: "custom-pin-marker",
     html: `
@@ -209,42 +1225,50 @@ function initMap() {
 
   state.marker = L.marker([state.currentLat, state.currentLng], { icon: customIcon }).addTo(mapInstance);
 
-  // Map Click Listener -> Reverse Geocode & Fetch Weather
   mapInstance.on("click", (e) => {
     const { lat, lng } = e.latlng;
     state.marker.setLatLng([lat, lng]);
-    showToast(`Telemetry loading for ${lat.toFixed(2)}°, ${lng.toFixed(2)}°...`);
+    showToast(`2D Map: Loading ${lat.toFixed(2)}°, ${lng.toFixed(2)}°...`);
     fetchLocationAndWeather(lat, lng, { reverseGeocode: true });
   });
 }
 
-/**
- * Switch Map Tile Layers
- */
 function setTileLayer(key) {
   if (!TILE_LAYERS[key]) return;
-  
-  if (activeTileLayer) {
-    mapInstance.removeLayer(activeTileLayer);
-  }
+  if (activeTileLayer) mapInstance.removeLayer(activeTileLayer);
 
   const layerConfig = TILE_LAYERS[key];
   activeTileLayer = L.tileLayer(layerConfig.url, layerConfig.options);
   activeTileLayer.addTo(mapInstance);
   state.activeTileLayerKey = key;
 
-  // Update UI active buttons
   document.querySelectorAll(".layer-option-btn").forEach((btn) => {
     btn.classList.toggle("active", btn.dataset.layer === key);
   });
 }
 
-/**
- * ==========================================================================
- * DATA FETCHING & CONTROLLER
- * ==========================================================================
- */
+function toggleViewMode() {
+  state.viewMode = state.viewMode === "2d" ? "3d" : "2d";
+  document.body.classList.toggle("view-3d-mode", state.viewMode === "3d");
+  document.body.classList.toggle("view-2d-mode", state.viewMode === "2d");
 
+  if (dom.viewModeLabel) {
+    dom.viewModeLabel.textContent = state.viewMode === "3d" ? "2D Map" : "3D Globe";
+  }
+
+  if (state.viewMode === "3d") {
+    ThreeGlobe.flyTo(state.currentLat, state.currentLng);
+    showToast("Switched to Interactive 3D Earth Globe");
+  } else {
+    mapInstance.invalidateSize();
+    mapInstance.flyTo([state.currentLat, state.currentLng], 6, { duration: 1.2 });
+    showToast("Switched to 2D Cartographic Map");
+  }
+}
+
+/**
+ * Data Fetching
+ */
 async function fetchLocationAndWeather(lat, lng, options = {}) {
   try {
     setLoadingState(true);
@@ -263,13 +1287,13 @@ async function fetchLocationAndWeather(lat, lng, options = {}) {
     state.currentLat = lat;
     state.currentLng = lng;
 
-    if (state.marker) {
-      state.marker.setLatLng([lat, lng]);
-    }
+    if (state.marker) state.marker.setLatLng([lat, lng]);
 
-    if (options.zoom) {
-      mapInstance.flyTo([lat, lng], options.zoom, { duration: 1.5 });
+    // Sync 2D Map & 3D Globe
+    if (options.zoom && mapInstance) {
+      mapInstance.flyTo([lat, lng], options.zoom, { duration: 1.4 });
     }
+    ThreeGlobe.flyTo(lat, lng);
 
     const weatherUrl = `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lng}&current=temperature_2m,relative_humidity_2m,apparent_temperature,is_day,precipitation,rain,showers,snowfall,weather_code,cloud_cover,surface_pressure,wind_speed_10m,wind_direction_10m,wind_gusts_10m,uv_index&hourly=temperature_2m,relative_humidity_2m,precipitation_probability,weather_code,wind_speed_10m&daily=weather_code,temperature_2m_max,temperature_2m_min,sunrise,sunset,uv_index_max,precipitation_probability_max&timezone=auto`;
 
@@ -281,7 +1305,6 @@ async function fetchLocationAndWeather(lat, lng, options = {}) {
     state.currentTimezone = data.timezone || "UTC";
     state.currentElevation = data.elevation || 0;
 
-    // Update search bar text if not currently focused
     if (document.activeElement !== dom.searchInput) {
       dom.searchInput.value = state.currentCity || "";
       dom.searchClearBtn.style.display = dom.searchInput.value ? "flex" : "none";
@@ -289,13 +1312,28 @@ async function fetchLocationAndWeather(lat, lng, options = {}) {
 
     renderWeatherDashboard();
     startLiveClock();
-    setLoadingState(false);
 
+    // Update 3D Engines & Audio
+    const current = data.current;
+    if (current) {
+      ThreeWeatherFX.updateWeather(
+        current.weather_code,
+        current.is_day === 1,
+        current.wind_speed_10m,
+        current.wind_direction_10m,
+        current.cloud_cover
+      );
+      ThreeWidgets.updateWindDirection(current.wind_direction_10m);
+    }
+    ProceduralAudio.updateSoundscape();
+    LocomotiveController.update();
+
+    setLoadingState(false);
     dom.mainDashboard.classList.remove("collapsed");
 
   } catch (err) {
     console.error("Weather fetch error:", err);
-    showToast("⚠️ Could not load weather for this location.");
+    showToast("⚠️ Could not load weather telemetry for this location.");
     setLoadingState(false);
   }
 }
@@ -418,11 +1456,8 @@ function selectSearchResult(index) {
 }
 
 /**
- * ==========================================================================
- * MAXIMALIST RENDERING
- * ==========================================================================
+ * Rendering Dashboard
  */
-
 function renderWeatherDashboard() {
   const data = state.weatherData;
   if (!data || !data.current) return;
@@ -430,7 +1465,7 @@ function renderWeatherDashboard() {
   const current = data.current;
   const daily = data.daily || {};
   const isDay = current.is_day === 1;
-  const codeInfo = WEATHER_CODES[current.weather_code] || { label: "Clear", icon: "sun", status: "Real-Time Telemetry" };
+  const codeInfo = WEATHER_CODES[current.weather_code] || { label: "Clear", icon: "sun", status: "Real-Time 3D Simulation" };
 
   // 1. Location Meta
   dom.locationFlag.textContent = getFlagEmoji(state.currentCountryCode) || "📍";
@@ -451,7 +1486,7 @@ function renderWeatherDashboard() {
   dom.tempFeelsLike.textContent = `Feels like ${feelsLikeVal}${tempUnit}`;
   dom.weatherConditionText.textContent = codeInfo.label;
   if (dom.weatherStatusTag) {
-    dom.weatherStatusTag.textContent = codeInfo.status || "Real-Time Telemetry";
+    dom.weatherStatusTag.textContent = codeInfo.status || "Real-Time 3D Simulation";
   }
   dom.weatherHeroIcon.innerHTML = getWeatherSvgIcon(codeInfo.icon, isDay);
 
@@ -461,21 +1496,18 @@ function renderWeatherDashboard() {
     dom.tempLowVal.textContent = `${formatTemp(daily.temperature_2m_min[0])}°`;
   }
 
-  // 3. Maximalist Telemetry Gauges (4 Pillars)
-  // Humidity
+  // 3. Telemetry Gauges
   const humidity = current.relative_humidity_2m ?? 0;
   dom.metricHumidity.textContent = `${humidity}%`;
   dom.humidityBarFill.style.width = `${Math.min(100, Math.max(5, humidity))}%`;
   dom.humidityStatus.textContent = humidity > 70 ? "Humid / Muggy" : (humidity < 30 ? "Dry Air" : "Optimal Comfort");
 
-  // Wind
   const windCompass = getWindDirectionCompass(current.wind_direction_10m);
   dom.metricWind.textContent = formatWindSpeed(current.wind_speed_10m);
   const windKmh = current.wind_speed_10m ?? 0;
   dom.windBarFill.style.width = `${Math.min(100, Math.max(8, (windKmh / 60) * 100))}%`;
-  dom.windDirectionSub.textContent = `Blowing ${windCompass} (${current.wind_direction_10m}°)`;
+  dom.windDirectionSub.textContent = `${windCompass} (${current.wind_direction_10m}°)`;
 
-  // UV Index
   const uv = current.uv_index !== undefined ? current.uv_index : 0;
   dom.metricUv.textContent = uv.toFixed(1);
   dom.uvBarFill.style.width = `${Math.min(100, Math.max(5, (uv / 12) * 100))}%`;
@@ -486,27 +1518,26 @@ function renderWeatherDashboard() {
   else if (uv >= 3) uvLabel = "Moderate Exposure (3-5)";
   dom.uvStatus.textContent = uvLabel;
 
-  // Precipitation
   const pop = daily.precipitation_probability_max?.[0] ?? current.precipitation ?? 0;
   dom.metricPrecip.textContent = `${pop}%`;
   dom.precipBarFill.style.width = `${Math.min(100, Math.max(5, pop))}%`;
   dom.precipStatus.textContent = pop > 60 ? "Precipitation Likely" : (pop > 20 ? "Possible Showers" : "Dry Conditions");
 
-  // 4. Hourly Forecast (Next 24h)
+  // 4. Hourly Forecast
   renderHourlyForecast(data.hourly);
 
   // 5. 7-Day Extended Outlook
   renderDailyForecast(data.daily);
 
-  // 6. Solar Cycle & Daylight Duration
+  // 6. Solar Cycle & 3D Celestial Arc
   if (daily.sunrise?.[0] && daily.sunset?.[0]) {
     dom.sunSunriseTime.textContent = formatIsoTimeToLocal(daily.sunrise[0], state.currentTimezone);
     dom.sunSunsetTime.textContent = formatIsoTimeToLocal(daily.sunset[0], state.currentTimezone);
 
-    // Calculate daylight duration in hours/minutes
     try {
       const riseDate = new Date(daily.sunrise[0]);
       const setDate = new Date(daily.sunset[0]);
+      const now = new Date();
       const diffMs = setDate - riseDate;
       if (diffMs > 0) {
         const hrs = Math.floor(diffMs / (1000 * 60 * 60));
@@ -514,6 +1545,10 @@ function renderWeatherDashboard() {
         if (dom.daylightDurationBadge) {
           dom.daylightDurationBadge.textContent = `${hrs}h ${mins}m daylight`;
         }
+
+        // Calculate progress in daylight arc
+        const currentProgress = (now - riseDate) / diffMs;
+        ThreeWidgets.updateSolarPosition(currentProgress, isDay);
       }
     } catch (e) {
       console.warn("Solar calculation issue:", e);
@@ -611,14 +1646,10 @@ function renderDailyForecast(daily) {
 }
 
 /**
- * ==========================================================================
- * LIVE CLOCK
- * ==========================================================================
+ * Live Clock
  */
 function startLiveClock() {
-  if (state.liveClockInterval) {
-    clearInterval(state.liveClockInterval);
-  }
+  if (state.liveClockInterval) clearInterval(state.liveClockInterval);
   updateLiveClock();
   state.liveClockInterval = setInterval(updateLiveClock, 1000);
 }
@@ -655,9 +1686,7 @@ function updateLiveClock() {
 }
 
 /**
- * ==========================================================================
- * EVENT LISTENERS
- * ==========================================================================
+ * Event Listeners
  */
 function setupEventListeners() {
   // 1. Search Input Debounce
@@ -713,10 +1742,32 @@ function setupEventListeners() {
     }
   });
 
-  // 4. Geolocation Button
+  // 4. View Mode Button (2D Map <-> 3D Globe)
+  dom.viewModeBtn.addEventListener("click", toggleViewMode);
+
+  // 5. Audio FX Toggle Button
+  dom.audioFxBtn.addEventListener("click", () => {
+    ProceduralAudio.toggle();
+  });
+
+  // 6. Globe HUD Buttons
+  if (dom.globeAutoRotateBtn) {
+    dom.globeAutoRotateBtn.addEventListener("click", () => {
+      ThreeGlobe.toggleAutoRotate();
+    });
+  }
+
+  if (dom.globeResetBtn) {
+    dom.globeResetBtn.addEventListener("click", () => {
+      ThreeGlobe.flyTo(state.currentLat, state.currentLng);
+      showToast(`Camera focused on ${state.currentCity}`);
+    });
+  }
+
+  // 7. Geolocation Button
   dom.locateMeBtn.addEventListener("click", handleGeolocation);
 
-  // 5. Unit Toggle (°C / °F)
+  // 8. Unit Toggle (°C / °F)
   dom.unitToggleBtn.addEventListener("click", () => {
     state.unit = state.unit === "C" ? "F" : "C";
     dom.unitDisplayText.textContent = `°${state.unit}`;
@@ -724,7 +1775,7 @@ function setupEventListeners() {
     renderWeatherDashboard();
   });
 
-  // 6. Layer Switcher
+  // 9. Layer Switcher
   dom.layerBtn.addEventListener("click", () => {
     dom.layerPicker.classList.toggle("active");
   });
@@ -738,7 +1789,7 @@ function setupEventListeners() {
     });
   });
 
-  // 7. City Chips Click Handlers
+  // 10. City Chips Click Handlers
   document.querySelectorAll(".city-chip").forEach((chip) => {
     chip.addEventListener("click", () => {
       const lat = parseFloat(chip.dataset.lat);
@@ -756,19 +1807,24 @@ function setupEventListeners() {
     });
   });
 
-  // 8. Minimize / Restore Dashboard
+  // 11. Minimize / Restore Dashboard
   dom.minimizeBtn.addEventListener("click", () => {
     dom.mainDashboard.classList.add("collapsed");
   });
 
   dom.reopenBtn.addEventListener("click", () => {
     dom.mainDashboard.classList.remove("collapsed");
+    LocomotiveController.update();
   });
 
-  // 9. Brand Click -> Global View
+  // 12. Brand Click -> Global View
   dom.brandHomeBtn.addEventListener("click", () => {
-    mapInstance.flyTo([20, 0], 2.5, { duration: 1.5 });
-    showToast("Reset map to global view");
+    if (state.viewMode === "3d") {
+      ThreeGlobe.flyTo(20, 0);
+    } else {
+      mapInstance.flyTo([20, 0], 2.5, { duration: 1.5 });
+    }
+    showToast("Reset view to world overview");
   });
 }
 
@@ -812,11 +1868,8 @@ function handleGeolocation() {
 }
 
 /**
- * ==========================================================================
- * UTILITY HELPERS
- * ==========================================================================
+ * Utilities
  */
-
 function getFlagEmoji(countryCode) {
   if (!countryCode || countryCode.length !== 2) return "📍";
   const codePoints = countryCode
@@ -905,9 +1958,7 @@ function showToast(message) {
   dom.toastContainer.appendChild(toast);
 
   setTimeout(() => {
-    if (toast.parentNode) {
-      toast.parentNode.removeChild(toast);
-    }
+    if (toast.parentNode) toast.parentNode.removeChild(toast);
   }, 3100);
 }
 

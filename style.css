@@ -1,12 +1,12 @@
 /* ==========================================================================
-   WEATHER APP - MAXIMALIST DESIGN SYSTEM & STYLES
+   WEATHER APP - 3D METEOROLOGICAL ENGINE & LOCOMOTIVE SCROLL DESIGN SYSTEM
    ========================================================================== */
 
 :root {
   /* Maximalist Palette */
-  --bg-app: #080d14;
-  --bg-surface: #0f1824;
-  --bg-surface-elevated: #152233;
+  --bg-app: #060a10;
+  --bg-surface: rgba(15, 23, 36, 0.82);
+  --bg-surface-elevated: rgba(21, 34, 51, 0.88);
   --bg-surface-highlight: #1b2c42;
   --bg-surface-hover: #223752;
   --bg-subtle: #1a2a3e;
@@ -18,17 +18,24 @@
   --accent-emerald: #10b981;
   --accent-mint: #34d399;
   --accent-teal: #06b6d4;
+  --accent-cyan: #38bdf8;
   --accent-amber: #f59e0b;
+  --accent-gold: #fbbf24;
   --accent-rose: #f43f5e;
   --accent-purple: #a855f7;
+  --accent-electric: #818cf8;
 
-  --border-subtle: #1e3046;
-  --border-card: #253b56;
+  --border-subtle: rgba(30, 48, 70, 0.8);
+  --border-card: rgba(37, 59, 86, 0.85);
   --border-focus: #10b981;
-  --border-bright: rgba(52, 211, 153, 0.4);
+  --border-bright: rgba(52, 211, 153, 0.45);
+  --border-glass: rgba(255, 255, 255, 0.12);
 
-  --shadow-card: 0 14px 34px -4px rgba(0, 0, 0, 0.6), 0 4px 12px -2px rgba(0, 0, 0, 0.4);
-  --shadow-popover: 0 24px 45px -5px rgba(0, 0, 0, 0.7);
+  --shadow-card: 0 16px 36px -4px rgba(0, 0, 0, 0.65), 0 4px 14px -2px rgba(0, 0, 0, 0.45);
+  --shadow-popover: 0 24px 48px -5px rgba(0, 0, 0, 0.75);
+  --shadow-glow-mint: 0 0 24px rgba(52, 211, 153, 0.35);
+  --shadow-glow-cyan: 0 0 24px rgba(6, 182, 212, 0.35);
+  --shadow-glow-gold: 0 0 24px rgba(245, 158, 11, 0.35);
 
   --radius-sm: 6px;
   --radius-md: 10px;
@@ -38,9 +45,11 @@
 
   --font-heading: 'Outfit', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
   --font-body: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  --font-mono: 'JetBrains Mono', monospace;
 
   --transition-fast: 0.15s ease;
-  --transition-normal: 0.22s ease;
+  --transition-normal: 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+  --transition-smooth: 0.5s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 /* Reset & Base */
@@ -58,9 +67,52 @@ html, body {
   background-color: var(--bg-app);
   color: var(--text-primary);
   -webkit-font-smoothing: antialiased;
+  position: relative;
 }
 
-/* Fullscreen Map */
+/* Dynamic Atmospheric Weather Background Lighting Themes */
+body::before {
+  content: '';
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  pointer-events: none;
+  z-index: 0;
+  transition: background 1.2s ease;
+}
+
+body.theme-clear::before {
+  background: radial-gradient(circle at 75% 20%, rgba(251, 191, 36, 0.12) 0%, transparent 65%);
+}
+
+body.theme-rain::before {
+  background: radial-gradient(circle at 50% 30%, rgba(6, 182, 212, 0.14) 0%, transparent 70%);
+}
+
+body.theme-snow::before {
+  background: radial-gradient(circle at 50% 30%, rgba(186, 230, 253, 0.15) 0%, transparent 70%);
+}
+
+body.theme-thunder::before {
+  background: radial-gradient(circle at 60% 25%, rgba(168, 85, 247, 0.18) 0%, transparent 75%);
+}
+
+/* 3D Atmospheric Weather FX Fullscreen Canvas */
+#weather-fx-canvas {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  z-index: 4;
+  pointer-events: none;
+  opacity: 1;
+  transition: opacity 0.6s ease;
+}
+
+/* Fullscreen 2D Leaflet Map */
 #map {
   position: absolute;
   top: 0;
@@ -69,6 +121,124 @@ html, body {
   height: 100vh;
   z-index: 1;
   background: #090e16;
+  transition: opacity 0.5s ease, filter 0.5s ease;
+}
+
+body.view-3d-mode #map {
+  opacity: 0;
+  pointer-events: none;
+}
+
+/* Fullscreen 3D Earth Globe Container */
+#globe-container {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  z-index: 2;
+  background: radial-gradient(circle at 50% 50%, #0c1626 0%, #03060a 100%);
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity 0.6s cubic-bezier(0.16, 1, 0.3, 1), visibility 0.6s;
+  overflow: hidden;
+}
+
+body.view-3d-mode #globe-container {
+  opacity: 1;
+  visibility: visible;
+  z-index: 3;
+}
+
+#globe-canvas {
+  width: 100%;
+  height: 100%;
+  outline: none;
+  cursor: grab;
+}
+
+#globe-canvas:active {
+  cursor: grabbing;
+}
+
+/* 3D Globe HUD Controls */
+.globe-hud {
+  position: absolute;
+  bottom: 24px;
+  left: 24px;
+  z-index: 30;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.globe-hud-pill {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: var(--bg-surface);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid var(--border-card);
+  padding: 8px 14px;
+  border-radius: var(--radius-full);
+  font-family: var(--font-mono);
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--accent-mint);
+  box-shadow: var(--shadow-card);
+}
+
+.hud-status-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--accent-mint);
+  box-shadow: 0 0 10px var(--accent-mint);
+  animation: pulse-dot 2s infinite ease-in-out;
+}
+
+@keyframes pulse-dot {
+  0%, 100% { transform: scale(1); opacity: 1; }
+  50% { transform: scale(1.4); opacity: 0.6; }
+}
+
+.globe-hud-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.globe-ctrl-btn {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  background: var(--bg-surface);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid var(--border-card);
+  color: var(--text-primary);
+  padding: 8px 14px;
+  border-radius: var(--radius-full);
+  font-family: var(--font-body);
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  box-shadow: var(--shadow-card);
+  transition: var(--transition-fast);
+}
+
+.globe-ctrl-btn:hover {
+  background: var(--bg-surface-hover);
+  border-color: var(--accent-mint);
+  color: var(--accent-mint);
+}
+
+.globe-ctrl-btn.active {
+  background: var(--accent-mint);
+  color: #060a10;
+  border-color: var(--accent-mint);
+  font-weight: 700;
 }
 
 /* Leaflet Map Controls */
@@ -107,46 +277,47 @@ html, body {
 }
 
 .leaflet-control-attribution {
-  background: var(--bg-surface) !important;
+  background: rgba(15, 24, 36, 0.85) !important;
   color: var(--text-muted) !important;
-  border-top: 1px solid var(--border-subtle);
-  border-left: 1px solid var(--border-subtle);
-  border-top-left-radius: var(--radius-sm);
-  padding: 3px 10px !important;
-  font-size: 11px !important;
+  border-radius: 4px;
+  margin-bottom: 6px !important;
+  margin-right: 6px !important;
+  padding: 2px 8px !important;
+  font-size: 10px !important;
 }
 
 .leaflet-control-attribution a {
   color: var(--accent-mint) !important;
   text-decoration: none;
-  font-weight: 500;
 }
 
-/* Custom Location Pin Marker */
+/* Custom Animated Map Marker */
 .custom-pin-marker {
   position: relative;
+  width: 44px;
+  height: 44px;
   display: flex;
   align-items: center;
   justify-content: center;
 }
 
 .pin-core {
-  width: 16px;
-  height: 16px;
+  width: 14px;
+  height: 14px;
   background: var(--accent-mint);
-  border: 3px solid #ffffff;
+  border: 2.5px solid #ffffff;
   border-radius: 50%;
-  box-shadow: 0 0 16px var(--accent-emerald), 0 4px 10px rgba(0, 0, 0, 0.7);
+  box-shadow: 0 0 16px rgba(52, 211, 153, 0.9);
   z-index: 2;
-  position: relative;
+  transition: transform 0.2s ease;
 }
 
 .pin-pulse {
   position: absolute;
-  width: 44px;
-  height: 44px;
+  width: 38px;
+  height: 38px;
   border-radius: 50%;
-  background: rgba(52, 211, 153, 0.4);
+  background: rgba(52, 211, 153, 0.45);
   animation: marker-pulse 2s infinite cubic-bezier(0.2, 0.8, 0.2, 1);
   z-index: 1;
 }
@@ -186,7 +357,7 @@ html, body {
   justify-content: space-between;
   gap: 16px;
   width: 100%;
-  max-width: 1440px;
+  max-width: 1520px;
   margin: 0 auto;
 }
 
@@ -196,6 +367,8 @@ html, body {
   gap: 10px;
   padding: 8px 16px;
   background: var(--bg-surface);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
   border: 1px solid var(--border-card);
   border-radius: var(--radius-md);
   box-shadow: var(--shadow-card);
@@ -225,19 +398,36 @@ html, body {
   font-weight: 800;
   letter-spacing: -0.01em;
   color: var(--text-primary);
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.badge-3d {
+  font-size: 10px;
+  font-family: var(--font-mono);
+  font-weight: 800;
+  background: linear-gradient(135deg, var(--accent-cyan), var(--accent-electric));
+  color: #ffffff;
+  padding: 2px 6px;
+  border-radius: 4px;
+  text-shadow: 0 1px 2px rgba(0,0,0,0.5);
+  box-shadow: 0 0 10px rgba(56, 189, 248, 0.4);
 }
 
 /* Search Box */
 .search-wrapper {
   position: relative;
   flex: 1;
-  max-width: 520px;
+  max-width: 480px;
 }
 
 .search-box {
   display: flex;
   align-items: center;
   background: var(--bg-surface);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
   border: 1px solid var(--border-card);
   border-radius: var(--radius-md);
   padding: 8px 16px;
@@ -248,28 +438,30 @@ html, body {
 .search-box:focus-within {
   border-color: var(--accent-mint);
   background: var(--bg-surface-elevated);
+  box-shadow: var(--shadow-glow-mint);
 }
 
 .search-icon {
-  color: var(--text-secondary);
+  color: var(--text-muted);
   display: flex;
   align-items: center;
   margin-right: 10px;
 }
 
 .search-input {
-  width: 100%;
+  flex: 1;
   background: transparent;
   border: none;
   outline: none;
   font-family: var(--font-body);
-  font-size: 13px;
+  font-size: 14px;
   font-weight: 500;
   color: var(--text-primary);
 }
 
 .search-input::placeholder {
   color: var(--text-muted);
+  font-weight: 400;
 }
 
 .search-clear-btn {
@@ -277,11 +469,12 @@ html, body {
   border: none;
   color: var(--text-muted);
   cursor: pointer;
-  padding: 3px;
-  border-radius: 4px;
   display: none;
   align-items: center;
   justify-content: center;
+  padding: 2px;
+  border-radius: 4px;
+  transition: var(--transition-fast);
 }
 
 .search-clear-btn:hover {
@@ -292,29 +485,32 @@ html, body {
   font-size: 11px;
   font-weight: 700;
   color: var(--text-muted);
-  background: var(--bg-subtle);
+  background: var(--bg-surface-highlight);
   border: 1px solid var(--border-subtle);
-  padding: 2px 7px;
+  padding: 2px 6px;
   border-radius: 4px;
   margin-left: 8px;
+  user-select: none;
 }
 
-/* Autocomplete Recommendations Dropdown */
+/* Autocomplete Dropdown */
 .search-results-dropdown {
   position: absolute;
-  top: calc(100% + 6px);
+  top: calc(100% + 8px);
   left: 0;
   width: 100%;
-  background: var(--bg-surface);
+  background: var(--bg-surface-elevated);
+  backdrop-filter: blur(24px);
+  -webkit-backdrop-filter: blur(24px);
   border: 1px solid var(--border-card);
-  border-radius: var(--radius-md);
+  border-radius: var(--radius-lg);
   box-shadow: var(--shadow-popover);
-  max-height: 380px;
-  overflow-y: auto;
+  overflow: hidden;
   display: none;
   flex-direction: column;
   z-index: 100;
-  padding: 6px;
+  max-height: 380px;
+  overflow-y: auto;
 }
 
 .search-results-dropdown.active {
@@ -325,15 +521,17 @@ html, body {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 10px 14px;
-  border-radius: var(--radius-sm);
+  padding: 10px 16px;
   cursor: pointer;
+  border-bottom: 1px solid var(--border-subtle);
   transition: var(--transition-fast);
-  color: var(--text-primary);
 }
 
-.search-result-item:hover,
-.search-result-item.highlighted {
+.search-result-item:last-child {
+  border-bottom: none;
+}
+
+.search-result-item:hover, .search-result-item.highlighted {
   background: var(--bg-surface-hover);
 }
 
@@ -344,8 +542,7 @@ html, body {
 }
 
 .result-flag {
-  font-size: 20px;
-  line-height: 1;
+  font-size: 18px;
 }
 
 .result-text {
@@ -368,7 +565,7 @@ html, body {
 .result-coords {
   font-size: 11px;
   color: var(--text-muted);
-  font-family: monospace;
+  font-family: var(--font-mono);
 }
 
 .search-empty-state, .search-loading-state {
@@ -395,9 +592,11 @@ html, body {
   justify-content: center;
   gap: 7px;
   background: var(--bg-surface);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
   border: 1px solid var(--border-card);
   color: var(--text-primary);
-  padding: 8px 15px;
+  padding: 8px 14px;
   border-radius: var(--radius-md);
   font-family: var(--font-body);
   font-size: 13px;
@@ -414,18 +613,75 @@ html, body {
   color: var(--accent-mint);
 }
 
+/* View Mode Button */
+.mode-toggle-btn {
+  background: linear-gradient(135deg, rgba(6, 182, 212, 0.15), rgba(168, 85, 247, 0.15));
+  border-color: rgba(6, 182, 212, 0.4);
+}
+
+.mode-toggle-btn:hover {
+  background: linear-gradient(135deg, rgba(6, 182, 212, 0.25), rgba(168, 85, 247, 0.25));
+  border-color: var(--accent-teal);
+  color: var(--accent-teal);
+}
+
+body.view-3d-mode .mode-toggle-btn {
+  background: linear-gradient(135deg, var(--accent-teal), var(--accent-purple));
+  color: #ffffff;
+  border-color: transparent;
+  box-shadow: 0 0 16px rgba(6, 182, 212, 0.4);
+}
+
+/* Audio FX Toggle Button */
+.audio-toggle-btn {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.sound-wave-bars {
+  display: flex;
+  align-items: flex-end;
+  gap: 2px;
+  height: 12px;
+}
+
+.sound-wave-bars .bar {
+  width: 2.5px;
+  height: 4px;
+  background: var(--text-muted);
+  border-radius: 1px;
+  transition: var(--transition-fast);
+}
+
+.audio-toggle-btn.active .sound-wave-bars .bar {
+  background: var(--accent-mint);
+  animation: sound-equalizer 0.8s infinite ease-in-out alternate;
+}
+
+.audio-toggle-btn.active .sound-wave-bars .bar-1 { animation-delay: 0.1s; }
+.audio-toggle-btn.active .sound-wave-bars .bar-2 { animation-delay: 0.3s; }
+.audio-toggle-btn.active .sound-wave-bars .bar-3 { animation-delay: 0.5s; }
+
+@keyframes sound-equalizer {
+  0% { height: 3px; }
+  100% { height: 12px; }
+}
+
 .unit-btn {
   min-width: 44px;
   font-weight: 800;
   color: var(--accent-mint);
 }
 
-/* Clean Layer Switcher (No Emojis) */
+/* Map Layer Switcher Dropdown */
 .layer-picker-menu {
   position: absolute;
   top: 58px;
   right: 22px;
-  background: var(--bg-surface);
+  background: var(--bg-surface-elevated);
+  backdrop-filter: blur(24px);
+  -webkit-backdrop-filter: blur(24px);
   border: 1px solid var(--border-card);
   border-radius: var(--radius-md);
   padding: 6px;
@@ -454,38 +710,29 @@ html, body {
   font-size: 13px;
   font-weight: 600;
   cursor: pointer;
-  text-align: left;
   transition: var(--transition-fast);
 }
 
-.layer-option-btn:hover,
-.layer-option-btn.active {
+.layer-option-btn:hover {
   background: var(--bg-surface-hover);
   color: var(--text-primary);
 }
 
 .layer-option-btn.active {
+  background: var(--bg-surface-highlight);
   color: var(--accent-mint);
-  background: var(--bg-surface-elevated);
+  font-weight: 700;
 }
 
-.layer-option-btn.active::after {
-  content: "✓";
-  color: var(--accent-mint);
-  font-weight: 800;
-  font-size: 12px;
-}
-
-/* Quick City Chips Bar */
+/* Quick City Preset Chips */
 .quick-chips-bar {
   display: flex;
   align-items: center;
   gap: 8px;
   overflow-x: auto;
-  max-width: 1440px;
-  margin: 10px auto 0;
-  width: 100%;
-  padding-bottom: 2px;
+  padding: 6px 2px;
+  max-width: 1520px;
+  margin: 10px auto 0 auto;
   scrollbar-width: none;
 }
 
@@ -498,6 +745,8 @@ html, body {
   align-items: center;
   gap: 6px;
   background: var(--bg-surface);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
   border: 1px solid var(--border-card);
   color: var(--text-secondary);
   padding: 6px 14px;
@@ -513,10 +762,11 @@ html, body {
   background: var(--bg-surface-hover);
   border-color: var(--accent-mint);
   color: var(--text-primary);
+  transform: translateY(-1px);
 }
 
 /* ==========================================================================
-   MAXIMALIST WEATHER DASHBOARD CARD
+   MAXIMALIST WEATHER DASHBOARD CARD WITH LOCOMOTIVE SCROLL
    ========================================================================== */
 
 .main-dashboard {
@@ -524,12 +774,12 @@ html, body {
   right: 22px;
   top: 98px;
   bottom: 22px;
-  width: 450px;
+  width: 460px;
   max-width: calc(100vw - 44px);
   display: flex;
   flex-direction: column;
-  z-index: 20;
-  transition: transform var(--transition-normal), opacity var(--transition-normal);
+  z-index: 25;
+  transition: transform var(--transition-smooth), opacity var(--transition-smooth);
 }
 
 .main-dashboard.collapsed {
@@ -541,12 +791,14 @@ html, body {
   position: absolute;
   top: 98px;
   right: 22px;
-  z-index: 21;
+  z-index: 26;
   background: var(--bg-surface);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
   border: 1px solid var(--border-card);
   color: var(--text-primary);
-  width: 42px;
-  height: 42px;
+  width: 44px;
+  height: 44px;
   border-radius: var(--radius-md);
   display: none;
   align-items: center;
@@ -559,6 +811,7 @@ html, body {
 .dashboard-toggle-btn:hover {
   background: var(--bg-surface-hover);
   color: var(--accent-mint);
+  box-shadow: var(--shadow-glow-mint);
 }
 
 .main-dashboard.collapsed + .dashboard-toggle-btn {
@@ -569,12 +822,15 @@ html, body {
 .weather-card {
   flex: 1;
   background: var(--bg-surface);
+  backdrop-filter: blur(28px);
+  -webkit-backdrop-filter: blur(28px);
   border: 1px solid var(--border-card);
   border-radius: var(--radius-xl);
   box-shadow: var(--shadow-card);
   display: flex;
   flex-direction: column;
   overflow: hidden;
+  position: relative;
 }
 
 /* Card Header */
@@ -585,6 +841,7 @@ html, body {
   justify-content: space-between;
   border-bottom: 1px solid var(--border-card);
   background: var(--bg-surface-elevated);
+  z-index: 5;
 }
 
 .location-meta {
@@ -627,7 +884,7 @@ html, body {
   font-size: 11px;
   color: var(--accent-mint);
   font-weight: 600;
-  font-family: monospace;
+  font-family: var(--font-mono);
 }
 
 .live-clock-badge {
@@ -695,7 +952,7 @@ html, body {
   color: var(--text-primary);
 }
 
-/* Card Scrollable Body */
+/* Card Scrollable Body (Locomotive Scroll Ready) */
 .weather-card-body {
   flex: 1;
   overflow-y: auto;
@@ -703,6 +960,9 @@ html, body {
   display: flex;
   flex-direction: column;
   gap: 20px;
+  position: relative;
+  scrollbar-width: thin;
+  scrollbar-color: var(--border-card) transparent;
 }
 
 .weather-card-body::-webkit-scrollbar {
@@ -724,108 +984,107 @@ html, body {
   border: 1px solid var(--border-card);
   border-radius: var(--radius-lg);
   padding: 16px 18px;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.25);
+  transition: transform 0.2s ease;
 }
 
 .temp-primary-box {
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: 4px;
 }
 
 .temp-main {
-  font-family: var(--font-heading);
-  font-size: 54px;
-  font-weight: 900;
-  line-height: 1;
-  color: var(--text-primary);
   display: flex;
-  align-items: flex-start;
+  align-items: baseline;
+  line-height: 1;
+}
+
+#temp-value {
+  font-family: var(--font-heading);
+  font-size: 52px;
+  font-weight: 900;
   letter-spacing: -0.03em;
+  color: var(--text-primary);
 }
 
 .temp-unit-symbol {
-  font-size: 26px;
+  font-family: var(--font-heading);
+  font-size: 24px;
   font-weight: 700;
   color: var(--accent-mint);
-  margin-top: 2px;
+  margin-left: 2px;
 }
 
 .temp-meta-badges {
   display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  gap: 8px;
+  flex-direction: column;
+  gap: 4px;
 }
 
 .temp-apparent {
-  font-size: 12px;
-  color: var(--text-secondary);
+  font-size: 13px;
   font-weight: 600;
-  background: var(--bg-surface);
-  border: 1px solid var(--border-subtle);
-  padding: 3px 8px;
-  border-radius: var(--radius-sm);
+  color: var(--text-secondary);
 }
 
 .temp-high-low-badge {
   display: flex;
   align-items: center;
-  gap: 6px;
+  gap: 8px;
   font-size: 12px;
   font-weight: 700;
-  background: var(--bg-surface);
-  border: 1px solid var(--border-subtle);
-  padding: 3px 8px;
-  border-radius: var(--radius-sm);
 }
 
-.temp-high-low-badge .high { color: var(--accent-rose); }
-.temp-high-low-badge .low { color: var(--accent-mint); }
+.temp-high-low-badge .high {
+  color: var(--accent-rose);
+}
+
+.temp-high-low-badge .low {
+  color: var(--accent-teal);
+}
 
 .weather-hero-right {
   display: flex;
   flex-direction: column;
   align-items: flex-end;
-  gap: 6px;
+  text-align: right;
+  gap: 4px;
 }
 
 .weather-hero-icon-container {
-  width: 68px;
-  height: 68px;
+  width: 60px;
+  height: 60px;
   display: flex;
   align-items: center;
   justify-content: center;
+  filter: drop-shadow(0 4px 12px rgba(52, 211, 153, 0.3));
 }
 
 .weather-condition-title {
   font-family: var(--font-heading);
   font-size: 16px;
-  font-weight: 800;
+  font-weight: 700;
   color: var(--text-primary);
-  text-align: right;
-  line-height: 1.1;
 }
 
 .weather-status-tag {
   font-size: 10px;
   font-weight: 700;
   text-transform: uppercase;
-  letter-spacing: 0.08em;
+  letter-spacing: 0.04em;
   color: var(--accent-mint);
-  background: rgba(16, 185, 129, 0.12);
-  border: 1px solid rgba(52, 211, 153, 0.25);
-  padding: 2px 6px;
-  border-radius: 4px;
+  background: rgba(52, 211, 153, 0.12);
+  border: 1px solid rgba(52, 211, 153, 0.3);
+  padding: 2px 8px;
+  border-radius: var(--radius-full);
 }
 
-/* ==========================================================================
-   MAXIMALIST TELEMETRY GAUGES GRID (4 PILLARS)
-   ========================================================================== */
-
+/* Maximalist Telemetry Gauges */
 .telemetry-grid {
   display: grid;
   grid-template-columns: repeat(2, 1fr);
-  gap: 10px;
+  gap: 12px;
 }
 
 .telemetry-card {
@@ -836,67 +1095,92 @@ html, body {
   display: flex;
   flex-direction: column;
   gap: 6px;
-  transition: var(--transition-fast);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+  transition: transform 0.2s ease, border-color 0.2s ease;
 }
 
 .telemetry-card:hover {
-  border-color: var(--accent-mint);
-  background: var(--bg-surface-highlight);
+  border-color: var(--border-bright);
+  transform: translateY(-2px);
 }
 
 .telemetry-head {
   display: flex;
   align-items: center;
   gap: 6px;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text-secondary);
 }
 
-.telemetry-icon {
-  font-size: 14px;
-}
-
-.telemetry-title {
-  font-size: 11px;
+.badge-micro-3d {
+  margin-left: auto;
+  font-size: 9px;
+  font-family: var(--font-mono);
   font-weight: 700;
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
-  color: var(--text-muted);
+  background: rgba(6, 182, 212, 0.2);
+  color: var(--accent-teal);
+  border: 1px solid rgba(6, 182, 212, 0.4);
+  padding: 1px 4px;
+  border-radius: 3px;
 }
 
 .telemetry-val {
   font-family: var(--font-heading);
-  font-size: 18px;
+  font-size: 20px;
   font-weight: 800;
   color: var(--text-primary);
-  line-height: 1;
+  line-height: 1.1;
 }
 
 .telemetry-bar-wrap {
   width: 100%;
-  height: 5px;
-  background: var(--bg-app);
-  border-radius: 3px;
+  height: 4px;
+  background: var(--bg-subtle);
+  border-radius: var(--radius-full);
   overflow: hidden;
-  margin-top: 2px;
+  margin: 2px 0;
 }
 
 .telemetry-bar-fill {
   height: 100%;
-  border-radius: 3px;
-  transition: width 0.6s ease;
+  border-radius: var(--radius-full);
+  transition: width 0.6s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
-.humidity-fill { background: linear-gradient(90deg, #06b6d4, #3b82f6); }
-.wind-fill { background: linear-gradient(90deg, #10b981, #06b6d4); }
-.uv-fill { background: linear-gradient(90deg, #10b981, #f59e0b, #f43f5e); }
-.precip-fill { background: linear-gradient(90deg, #3b82f6, #6366f1); }
+.humidity-fill { background: linear-gradient(90deg, #06b6d4, #34d399); }
+.wind-fill { background: linear-gradient(90deg, #38bdf8, #818cf8); }
+.uv-fill { background: linear-gradient(90deg, #fbbf24, #f43f5e); }
+.precip-fill { background: linear-gradient(90deg, #38bdf8, #0ea5e9); }
 
 .telemetry-sub {
   font-size: 11px;
-  color: var(--text-secondary);
-  font-weight: 600;
+  color: var(--text-muted);
+  font-weight: 500;
 }
 
-/* Section Containers & Headers */
+/* 3D Wind Telemetry Card & Compass Gyroscope */
+.wind-telemetry-content {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.wind-compass-3d-wrapper {
+  width: 52px;
+  height: 52px;
+  position: relative;
+  display: grid;
+  place-items: center;
+}
+
+#wind-3d-compass-canvas {
+  width: 52px;
+  height: 52px;
+  border-radius: 50%;
+}
+
+/* Section Blocks */
 .section-block {
   display: flex;
   flex-direction: column;
@@ -910,37 +1194,34 @@ html, body {
 }
 
 .section-title {
-  font-family: var(--font-heading);
-  font-size: 12px;
-  font-weight: 800;
-  text-transform: uppercase;
-  letter-spacing: 0.06em;
-  color: var(--text-secondary);
   display: flex;
   align-items: center;
   gap: 6px;
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--text-primary);
+  text-transform: uppercase;
+  letter-spacing: 0.02em;
 }
 
 .section-badge {
   font-size: 10px;
   font-weight: 700;
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
-  color: var(--accent-mint);
-  background: var(--bg-surface-elevated);
-  border: 1px solid var(--border-card);
+  color: var(--text-muted);
+  background: var(--bg-surface-highlight);
+  border: 1px solid var(--border-subtle);
   padding: 2px 7px;
-  border-radius: 4px;
+  border-radius: var(--radius-full);
 }
 
-/* 24-Hour Hourly Timeline */
+/* Hourly Breakdown Horizontal Scroll Container */
 .hourly-scroll-container {
   display: flex;
-  align-items: center;
   gap: 8px;
   overflow-x: auto;
-  padding: 2px 0 8px;
+  padding-bottom: 6px;
   scrollbar-width: thin;
+  scrollbar-color: var(--border-card) transparent;
 }
 
 .hourly-scroll-container::-webkit-scrollbar {
@@ -949,10 +1230,11 @@ html, body {
 
 .hourly-scroll-container::-webkit-scrollbar-thumb {
   background: var(--border-card);
+  border-radius: 4px;
 }
 
 .hourly-card {
-  flex: 0 0 68px;
+  flex: 0 0 76px;
   background: var(--bg-surface-elevated);
   border: 1px solid var(--border-card);
   border-radius: var(--radius-md);
@@ -961,49 +1243,47 @@ html, body {
   flex-direction: column;
   align-items: center;
   gap: 6px;
-  text-align: center;
-  transition: var(--transition-fast);
+  transition: transform 0.2s ease, border-color 0.2s ease;
+}
+
+.hourly-card:hover {
+  transform: translateY(-2px);
+  border-color: var(--border-bright);
 }
 
 .hourly-card.active {
   border-color: var(--accent-mint);
   background: var(--bg-surface-highlight);
-}
-
-.hourly-card:hover {
-  background: var(--bg-surface-hover);
+  box-shadow: 0 0 12px rgba(52, 211, 153, 0.25);
 }
 
 .hourly-time {
   font-size: 11px;
-  font-weight: 700;
+  font-weight: 600;
   color: var(--text-secondary);
 }
 
 .hourly-icon {
-  width: 26px;
-  height: 26px;
+  width: 24px;
+  height: 24px;
   display: grid;
   place-items: center;
 }
 
 .hourly-temp {
   font-family: var(--font-heading);
-  font-size: 13px;
+  font-size: 14px;
   font-weight: 800;
   color: var(--text-primary);
 }
 
 .hourly-pop {
   font-size: 10px;
+  font-weight: 600;
   color: var(--accent-teal);
-  display: flex;
-  align-items: center;
-  gap: 2px;
-  font-weight: 700;
 }
 
-/* 7-Day Extended Outlook */
+/* 7-Day Extended Forecast List */
 .daily-forecast-list {
   display: flex;
   flex-direction: column;
@@ -1011,24 +1291,25 @@ html, body {
 }
 
 .daily-item {
-  display: grid;
-  grid-template-columns: 80px 32px 1fr 75px;
+  display: flex;
   align-items: center;
-  gap: 10px;
+  justify-content: space-between;
   background: var(--bg-surface-elevated);
   border: 1px solid var(--border-card);
   border-radius: var(--radius-md);
-  padding: 8px 12px;
+  padding: 8px 14px;
   transition: var(--transition-fast);
 }
 
 .daily-item:hover {
-  background: var(--bg-surface-highlight);
+  background: var(--bg-surface-hover);
+  border-color: var(--border-bright);
 }
 
 .daily-day {
+  width: 50px;
   font-size: 13px;
-  font-weight: 700;
+  font-weight: 600;
   color: var(--text-primary);
 }
 
@@ -1040,16 +1321,15 @@ html, body {
 }
 
 .daily-temp-bar-container {
-  display: flex;
-  align-items: center;
-  width: 100%;
+  flex: 1;
+  margin: 0 14px;
 }
 
 .temp-bar-track {
-  flex: 1;
-  height: 6px;
-  background: var(--bg-app);
-  border-radius: 3px;
+  width: 100%;
+  height: 5px;
+  background: var(--bg-subtle);
+  border-radius: var(--radius-full);
   position: relative;
   overflow: hidden;
 }
@@ -1057,52 +1337,47 @@ html, body {
 .temp-bar-fill {
   position: absolute;
   height: 100%;
-  border-radius: 3px;
-  background: linear-gradient(90deg, var(--accent-teal), var(--accent-amber), var(--accent-rose));
+  background: linear-gradient(90deg, var(--accent-teal), var(--accent-amber));
+  border-radius: var(--radius-full);
 }
 
 .daily-temp-extremes {
-  font-family: var(--font-heading);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-family: var(--font-mono);
   font-size: 12px;
   font-weight: 700;
-  text-align: right;
-  display: flex;
+  width: 60px;
   justify-content: flex-end;
-  gap: 6px;
 }
 
 .daily-temp-extremes .min { color: var(--text-muted); }
 .daily-temp-extremes .max { color: var(--text-primary); }
 
-/* Sun & Solar Arc Track */
+/* Sun & Daylight Cycle Card with 3D Celestial Solar Arc */
 .sun-cycle-box {
   background: var(--bg-surface-elevated);
   border: 1px solid var(--border-card);
-  border-radius: var(--radius-md);
-  padding: 12px 16px;
+  border-radius: var(--radius-lg);
+  padding: 14px 16px;
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 12px;
+  position: relative;
+  overflow: hidden;
 }
 
 .sun-item {
   display: flex;
   align-items: center;
   gap: 10px;
+  z-index: 2;
 }
 
 .sun-icon-box {
-  width: 32px;
-  height: 32px;
-  border-radius: var(--radius-sm);
-  display: grid;
-  place-items: center;
-  font-size: 16px;
+  font-size: 20px;
 }
-
-.sun-icon-box.dawn { background: rgba(245, 158, 11, 0.15); border: 1px solid rgba(245, 158, 11, 0.3); }
-.sun-icon-box.dusk { background: rgba(244, 63, 94, 0.15); border: 1px solid rgba(244, 63, 94, 0.3); }
 
 .sun-info {
   display: flex;
@@ -1111,45 +1386,58 @@ html, body {
 
 .sun-label {
   font-size: 10px;
-  color: var(--text-muted);
-  text-transform: uppercase;
   font-weight: 700;
-  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: var(--text-muted);
 }
 
 .sun-time {
   font-family: var(--font-heading);
-  font-size: 14px;
+  font-size: 13px;
   font-weight: 800;
   color: var(--text-primary);
 }
 
 .solar-arc-track {
   flex: 1;
-  height: 20px;
+  height: 60px;
   position: relative;
   display: flex;
   align-items: center;
   justify-content: center;
+  margin: 0 10px;
+}
+
+.solar-3d-canvas {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  z-index: 1;
 }
 
 .solar-arc-line {
-  width: 100%;
-  height: 2px;
-  background: dashed;
-  border-top: 2px dashed var(--border-card);
+  position: absolute;
+  width: 80%;
+  height: 40px;
+  border-top: 2px dashed rgba(251, 191, 36, 0.4);
+  border-radius: 50% 50% 0 0 / 100% 100% 0 0;
+  top: 15px;
 }
 
 .solar-sun-dot {
   position: absolute;
   width: 10px;
   height: 10px;
+  background: var(--accent-gold);
   border-radius: 50%;
-  background: var(--accent-amber);
-  box-shadow: 0 0 10px var(--accent-amber);
-  top: 5px;
+  box-shadow: 0 0 12px var(--accent-gold);
+  top: 10px;
   left: 50%;
-  transform: translateX(-50%);
+  transform: translate(-50%, 0);
+  transition: all 0.5s ease;
 }
 
 /* Atmospheric Telemetry Details Grid */
@@ -1163,16 +1451,10 @@ html, body {
   background: var(--bg-surface-elevated);
   border: 1px solid var(--border-card);
   border-radius: var(--radius-md);
-  padding: 12px 14px;
+  padding: 10px 12px;
   display: flex;
   flex-direction: column;
   gap: 4px;
-  transition: var(--transition-fast);
-}
-
-.detail-card:hover {
-  border-color: var(--accent-mint);
-  background: var(--bg-surface-highlight);
 }
 
 .detail-card-head {
@@ -1180,104 +1462,102 @@ html, body {
   align-items: center;
   gap: 6px;
   font-size: 11px;
-  color: var(--text-muted);
-  font-weight: 700;
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
+  font-weight: 600;
+  color: var(--text-secondary);
 }
 
 .detail-card-val {
   font-family: var(--font-heading);
-  font-size: 16px;
+  font-size: 15px;
   font-weight: 800;
   color: var(--text-primary);
 }
 
-.coords-val {
+.detail-card-val.coords-val {
+  font-family: var(--font-mono);
   font-size: 12px;
-  font-family: monospace;
-  letter-spacing: -0.02em;
 }
 
 .detail-card-sub {
-  font-size: 11px;
-  color: var(--text-secondary);
-  font-weight: 500;
+  font-size: 10px;
+  color: var(--text-muted);
 }
 
 /* Toast Notifications */
 .toast-container {
-  position: absolute;
-  top: 75px;
+  position: fixed;
+  bottom: 24px;
   left: 50%;
   transform: translateX(-50%);
-  z-index: 200;
-  pointer-events: none;
   display: flex;
   flex-direction: column;
-  align-items: center;
-  gap: 6px;
+  gap: 8px;
+  z-index: 1000;
+  pointer-events: none;
 }
 
 .toast-msg {
-  background: var(--bg-surface);
+  background: rgba(15, 24, 36, 0.94);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
   border: 1px solid var(--border-card);
   color: var(--text-primary);
-  padding: 8px 18px;
-  border-radius: var(--radius-md);
+  padding: 10px 18px;
+  border-radius: var(--radius-full);
   font-size: 13px;
   font-weight: 600;
   box-shadow: var(--shadow-popover);
-  animation: toastIn 0.25s ease, toastOut 0.25s ease 2.7s forwards;
   display: flex;
   align-items: center;
   gap: 8px;
+  animation: toast-in 0.3s cubic-bezier(0.16, 1, 0.3, 1), toast-out 0.3s 2.8s forwards;
+  pointer-events: auto;
 }
 
-@keyframes toastIn {
-  from { opacity: 0; transform: translateY(-10px); }
-  to { opacity: 1; transform: translateY(0); }
+@keyframes toast-in {
+  from { transform: translateY(20px); opacity: 0; }
+  to { transform: translateY(0); opacity: 1; }
 }
 
-@keyframes toastOut {
-  to { opacity: 0; transform: translateY(-10px); }
+@keyframes toast-out {
+  from { transform: translateY(0); opacity: 1; }
+  to { transform: translateY(20px); opacity: 0; }
 }
 
-/* Responsive Layout */
-@media (max-width: 900px) {
+/* Spin animation helper */
+.spin {
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  100% { transform: rotate(360deg); }
+}
+
+/* ==========================================================================
+   RESPONSIVE LAYOUT
+   ========================================================================== */
+
+@media (max-width: 960px) {
   .app-overlay {
-    padding: 12px;
+    padding: 12px 14px;
   }
 
   .top-nav {
     flex-wrap: wrap;
-    gap: 8px;
   }
 
   .search-wrapper {
     order: 3;
     max-width: 100%;
     width: 100%;
+    margin-top: 8px;
   }
 
   .main-dashboard {
-    left: 12px;
-    right: 12px;
-    width: auto;
-    max-width: 100%;
-    top: auto;
-    bottom: 12px;
-    height: 60vh;
-  }
-
-  .main-dashboard.collapsed {
-    transform: translateY(calc(100% + 20px));
-  }
-
-  .dashboard-toggle-btn {
-    top: auto;
-    bottom: 20px;
-    right: 16px;
+    width: calc(100vw - 28px);
+    right: 14px;
+    bottom: 14px;
+    top: 140px;
   }
 }
 
@@ -1286,16 +1566,12 @@ html, body {
     font-size: 14px;
   }
 
-  .nav-actions .action-label {
+  .action-label, #view-mode-label, #audio-btn-label {
     display: none;
   }
 
   .action-btn {
-    padding: 6px 12px;
-  }
-
-  .temp-main {
-    font-size: 42px;
+    padding: 8px 10px;
   }
 
   .telemetry-grid {

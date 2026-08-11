@@ -3,24 +3,58 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Weather App</title>
-  <meta name="description" content="Explore real-time weather forecasts, country details, and live local clocks across the globe on an interactive full-screen world map.">
+  <title>Weather App - 3D Meteorological Engine</title>
+  <meta name="description" content="Explore real-time weather forecasts, 3D atmospheric simulations, and an interactive 3D Earth Globe with smooth inertia navigation.">
 
   <!-- Google Fonts -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Outfit:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Outfit:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@400;600;700&display=swap" rel="stylesheet">
 
   <!-- Leaflet CSS -->
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin=""/>
 
+  <!-- Locomotive Scroll CSS -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/locomotive-scroll@4.1.4/dist/locomotive-scroll.min.css">
+
   <!-- App Stylesheet -->
   <link rel="stylesheet" href="./style.css">
 </head>
-<body>
+<body class="view-2d-mode">
 
-  <!-- Full-Screen Interactive World Map -->
+  <!-- Full-Screen 3D Atmospheric Weather FX Canvas (Rain, Snow, Lightning, Sunbeams, Clouds) -->
+  <canvas id="weather-fx-canvas" aria-hidden="true"></canvas>
+
+  <!-- Full-Screen Interactive 2D World Map -->
   <div id="map" aria-label="Interactive World Map"></div>
+
+  <!-- Full-Screen Interactive 3D Earth Globe Container -->
+  <div id="globe-container" aria-label="Interactive 3D Earth Globe">
+    <canvas id="globe-canvas"></canvas>
+    
+    <!-- 3D Globe HUD Quick Controls -->
+    <div class="globe-hud interactive">
+      <div class="globe-hud-pill">
+        <span class="hud-status-dot"></span>
+        <span id="globe-coords-hud">35.68° N, 139.65° E</span>
+      </div>
+      <div class="globe-hud-actions">
+        <button id="globe-autorotate-btn" class="globe-ctrl-btn" title="Toggle Auto Rotation">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M21.5 2v6h-6M21.34 15.57a10 10 0 1 1-.57-8.38l5.67-5.67"/>
+          </svg>
+          <span>Auto-Spin</span>
+        </button>
+        <button id="globe-reset-btn" class="globe-ctrl-btn" title="Center on Selected City">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="12" cy="12" r="10"></circle>
+            <polygon points="16.24 7.76 14.12 14.12 7.76 16.24 9.88 9.88 16.24 7.76"></polygon>
+          </svg>
+          <span>Focus City</span>
+        </button>
+      </div>
+    </div>
+  </div>
 
   <!-- UI Overlay Layer -->
   <div class="app-overlay">
@@ -43,7 +77,7 @@
           </svg>
         </div>
         <div class="brand-text">
-          <h1>Weather App</h1>
+          <h1>Weather App <span class="badge-3d">3D FX</span></h1>
         </div>
       </div>
 
@@ -79,6 +113,31 @@
 
       <!-- Action Tools -->
       <div class="nav-actions">
+        <!-- View Mode Switcher: 2D Map <-> 3D Globe -->
+        <button id="view-mode-btn" class="action-btn mode-toggle-btn" title="Switch between 2D Map and 3D Earth Globe">
+          <svg class="icon-globe" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="12" cy="12" r="10"></circle>
+            <line x1="2" y1="12" x2="22" y2="12"></line>
+            <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"></path>
+          </svg>
+          <span id="view-mode-label">3D Globe</span>
+        </button>
+
+        <!-- Ambient Sound FX Toggle Button -->
+        <button id="audio-fx-btn" class="action-btn audio-toggle-btn" title="Toggle Procedural Weather Soundscape">
+          <svg class="audio-icon-speaker" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+            <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon>
+            <path class="audio-wave-1" d="M15.54 8.46a5 5 0 0 1 0 7.07"></path>
+            <path class="audio-wave-2" d="M19.07 4.93a10 10 0 0 1 0 14.14"></path>
+          </svg>
+          <span class="sound-wave-bars">
+            <span class="bar bar-1"></span>
+            <span class="bar bar-2"></span>
+            <span class="bar bar-3"></span>
+          </span>
+          <span id="audio-btn-label">Sound FX</span>
+        </button>
+
         <!-- Geolocation Button -->
         <button id="locate-me-btn" class="action-btn" title="Detect your location">
           <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
@@ -104,7 +163,7 @@
       </div>
     </header>
 
-    <!-- Map Layer Switcher Dropdown (Clean Typographic Labels, No Icons) -->
+    <!-- Map Layer Switcher Dropdown -->
     <div id="layer-picker" class="layer-picker-menu interactive">
       <button class="layer-option-btn active" data-layer="voyager">
         <span>Clean Voyager</span>
@@ -149,6 +208,9 @@
       <button class="city-chip" data-lat="28.6139" data-lng="77.2090" data-name="New Delhi" data-country="India" data-code="IN">
         <span>🇮🇳</span> New Delhi
       </button>
+      <button class="city-chip" data-lat="64.1466" data-lng="-21.9426" data-name="Reykjavik" data-country="Iceland" data-code="IS">
+        <span>🇮🇸</span> Reykjavik
+      </button>
     </div>
 
     <!-- Maximalist Weather Dashboard -->
@@ -189,11 +251,11 @@
           </div>
         </div>
 
-        <!-- Scrollable Dashboard Body -->
-        <div class="weather-card-body">
+        <!-- Scrollable Dashboard Body (Locomotive Scroll Container) -->
+        <div id="weather-card-scroll-body" class="weather-card-body" data-scroll-container>
           
           <!-- Maximalist Hero Section: Temperature & Atmosphere -->
-          <section class="weather-hero">
+          <section class="weather-hero" data-scroll data-scroll-speed="0.6">
             <div class="temp-primary-box">
               <div class="temp-main">
                 <span id="temp-value">--</span>
@@ -216,13 +278,13 @@
                 Loading...
               </div>
               <div id="weather-status-tag" class="weather-status-tag">
-                Real-Time Telemetry
+                Real-Time 3D Simulation
               </div>
             </div>
           </section>
 
           <!-- Maximalist Telemetry Gauges Row (4 Key Environmental Pillars) -->
-          <div class="telemetry-grid">
+          <div class="telemetry-grid" data-scroll data-scroll-speed="0.8">
             
             <!-- Humidity Gauge -->
             <div class="telemetry-card" title="Relative Humidity">
@@ -237,17 +299,25 @@
               <span id="humidity-status" class="telemetry-sub">Optimal Comfort</span>
             </div>
 
-            <!-- Wind Gauge -->
-            <div class="telemetry-card" title="Wind Velocity & Direction">
+            <!-- Wind Gauge with 3D Gyroscopic Compass Widget -->
+            <div class="telemetry-card wind-telemetry-card" title="Wind Velocity & 3D Vector Compass">
               <div class="telemetry-head">
                 <span class="telemetry-icon">💨</span>
-                <span class="telemetry-title">Wind</span>
+                <span class="telemetry-title">Wind Vector</span>
+                <span class="badge-micro-3d">3D Gyro</span>
               </div>
-              <div id="metric-wind" class="telemetry-val">-- km/h</div>
+              <div class="wind-telemetry-content">
+                <div class="wind-data-left">
+                  <div id="metric-wind" class="telemetry-val">-- km/h</div>
+                  <span id="wind-direction-sub" class="telemetry-sub">-- Direction</span>
+                </div>
+                <div class="wind-compass-3d-wrapper">
+                  <canvas id="wind-3d-compass-canvas" width="64" height="64"></canvas>
+                </div>
+              </div>
               <div class="telemetry-bar-wrap">
                 <div id="wind-bar-fill" class="telemetry-bar-fill wind-fill" style="width: 30%;"></div>
               </div>
-              <span id="wind-direction-sub" class="telemetry-sub">-- Direction</span>
             </div>
 
             <!-- UV Index Gauge -->
@@ -279,14 +349,14 @@
           </div>
 
           <!-- 24-Hour Hourly Timeline Graph & Cards -->
-          <section class="section-block">
+          <section class="section-block" data-scroll data-scroll-speed="0.9">
             <div class="section-header">
               <span class="section-title">
                 <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
                   <circle cx="12" cy="12" r="10"></circle>
                   <polyline points="12 6 12 12 16 14"></polyline>
                 </svg>
-                Hourly Breakdown (24h)
+                Hourly Forecast (24h)
               </span>
               <span class="section-badge">Live Radar</span>
             </div>
@@ -296,7 +366,7 @@
           </section>
 
           <!-- 7-Day Extended Forecast -->
-          <section class="section-block">
+          <section class="section-block" data-scroll data-scroll-speed="1.0">
             <div class="section-header">
               <span class="section-title">
                 <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
@@ -314,8 +384,8 @@
             </div>
           </section>
 
-          <!-- Sun & Daylight Solar Arc -->
-          <section class="section-block">
+          <!-- Sun & Daylight Solar Arc with 3D Celestial Solar/Moon Sphere -->
+          <section class="section-block solar-section-block" data-scroll data-scroll-speed="1.1" id="solar-section">
             <div class="section-header">
               <span class="section-title">
                 <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
@@ -328,10 +398,11 @@
                   <path d="m6.34 17.66-1.41 1.41"></path>
                   <path d="m19.07 4.93-1.41 1.41"></path>
                 </svg>
-                Solar Cycle & Daylight
+                Solar Cycle & 3D Celestial Arc
               </span>
               <span id="daylight-duration-badge" class="section-badge">-- hrs daylight</span>
             </div>
+            
             <div class="sun-cycle-box">
               <div class="sun-item">
                 <div class="sun-icon-box dawn">🌅</div>
@@ -341,8 +412,9 @@
                 </div>
               </div>
 
-              <!-- Solar Arc Visualizer -->
+              <!-- 3D Celestial Solar Arc Visualizer -->
               <div class="solar-arc-track">
+                <canvas id="solar-3d-canvas" class="solar-3d-canvas" width="220" height="74"></canvas>
                 <div class="solar-arc-line"></div>
                 <div id="solar-sun-dot" class="solar-sun-dot"></div>
               </div>
@@ -358,7 +430,7 @@
           </section>
 
           <!-- Extended Telemetry & Atmospheric Physics -->
-          <section class="section-block">
+          <section class="section-block" data-scroll data-scroll-speed="1.2">
             <div class="section-header">
               <span class="section-title">
                 <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
@@ -422,6 +494,14 @@
 
   <!-- Leaflet JS Library -->
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
+  
+  <!-- Three.js 3D Engine & OrbitControls -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
+
+  <!-- Locomotive Scroll Library -->
+  <script src="https://cdn.jsdelivr.net/npm/locomotive-scroll@4.1.4/dist/locomotive-scroll.min.js"></script>
+
   <!-- Application Logic -->
   <script src="./index.js"></script>
 </body>
