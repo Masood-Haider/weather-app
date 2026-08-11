@@ -164,25 +164,24 @@
           
           <!-- Location Header -->
           <div class="location-header-block">
-            <div class="location-meta">
+            <div class="location-row-top">
               <div class="location-place">
                 <span id="location-flag" class="location-flag">📍</span>
                 <h2 id="location-city" class="location-city">Loading...</h2>
               </div>
-              <div class="location-subtitle-row">
-                <span id="location-country" class="location-country-region">Coordinates</span>
-                <span class="location-dot">•</span>
-                <span id="location-elevation-badge" class="location-elevation-badge">0m</span>
+              <div id="live-time" class="live-time">--:--:--</div>
+            </div>
+
+            <div class="location-row-bottom">
+              <span id="location-country" class="location-country-region">Coordinates</span>
+              <div class="location-meta-badges">
+                <span id="location-elevation-badge" class="location-elevation-badge">Elev: 0m</span>
+                <span id="timezone-pill" class="timezone-pill">UTC</span>
               </div>
             </div>
 
-            <!-- Live Clock Badge -->
-            <div class="live-clock-badge">
-              <div id="live-time" class="live-time">--:--:--</div>
-              <div class="live-date-row">
-                <span id="live-date" class="live-date">---, --- --</span>
-                <span id="timezone-pill" class="timezone-pill">UTC</span>
-              </div>
+            <div class="location-date-bar">
+              <span id="live-date" class="live-date">---, --- --</span>
             </div>
           </div>
 
