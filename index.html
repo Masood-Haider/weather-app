@@ -157,7 +157,27 @@
          COMPACT DIVIDED HUD SPACES (LEFT POD, BOTTOM DECK, RIGHT POD, GLOBE HUD)
          ========================================================================== -->
     <div id="main-dashboard" class="hud-spaces-container">
-      <div class="hud-sheet-drag-handle" aria-hidden="true"></div>
+      
+      <!-- Mobile Retractable Bottom Sheet Header -->
+      <div class="hud-sheet-header" id="hud-sheet-toggle-btn" title="Tap to retract / expand weather panel">
+        <div class="hud-sheet-drag-handle"></div>
+        <div class="hud-sheet-title-bar">
+          <div class="hud-sheet-mini-info">
+            <span id="mini-location-flag" class="mini-flag">📍</span>
+            <span id="mini-location-city" class="mini-city">Loading...</span>
+            <span id="mini-temp-value" class="mini-temp">--°</span>
+            <span id="mini-weather-cond" class="mini-cond">Live</span>
+          </div>
+          <div class="hud-sheet-toggle-action">
+            <span class="toggle-text-hint">Hide Info</span>
+            <button class="hud-sheet-toggle-icon" id="hud-toggle-arrow-btn" aria-label="Toggle weather data panel">
+              <svg class="toggle-arrow-svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                <polyline points="6 9 12 15 18 9"></polyline>
+              </svg>
+            </button>
+          </div>
+        </div>
+      </div>
       
       <!-- 1. LEFT COMPACT HUD POD: LOCATION, TIME & CURRENT WEATHER -->
       <aside id="hud-left-pod" class="hud-pod hud-left-pod interactive" aria-label="Current Weather and Location">

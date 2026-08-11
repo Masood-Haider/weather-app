@@ -133,9 +133,13 @@ const dom = {
   layerBtn: document.getElementById("layer-btn"),
   layerPicker: document.getElementById("layer-picker"),
   mainDashboard: document.getElementById("main-dashboard"),
+  hudSheetToggleBtn: document.getElementById("hud-sheet-toggle-btn"),
+  miniLocationFlag: document.getElementById("mini-location-flag"),
+  miniLocationCity: document.getElementById("mini-location-city"),
+  miniTempValue: document.getElementById("mini-temp-value"),
+  miniWeatherCond: document.getElementById("mini-weather-cond"),
+  toggleTextHint: document.querySelector(".toggle-text-hint"),
   weatherCardScrollBody: document.getElementById("weather-card-scroll-body"),
-  minimizeBtn: document.getElementById("minimize-btn"),
-  reopenBtn: document.getElementById("reopen-dashboard-btn"),
   brandHomeBtn: document.getElementById("brand-home-btn"),
   toastContainer: document.getElementById("toast-container"),
 
@@ -940,12 +944,29 @@ const ThreeGlobe = (function() {
     renderer.render(scene, camera);
   }
 
+  function setRetracted(retracted) {
+    if (!camera || !renderer) return;
+    const w = window.innerWidth;
+    const h = window.innerHeight;
+    camera.aspect = w / h;
+    if (w <= 1024) {
+      if (retracted) {
+        camera.clearViewOffset();
+      } else {
+        camera.setViewOffset(w, h, 0, -h * 0.14, w, h);
+      }
+    } else {
+      camera.clearViewOffset();
+    }
+    camera.updateProjectionMatrix();
+  }
+
   function onResize() {
     if (!camera || !renderer) return;
     const w = window.innerWidth;
     const h = window.innerHeight;
     camera.aspect = w / h;
-    if (w <= 768) {
+    if (w <= 768 && !state.isDashboardRetracted) {
       camera.setViewOffset(w, h, 0, -h * 0.14, w, h);
     } else {
       camera.clearViewOffset();
@@ -954,7 +975,7 @@ const ThreeGlobe = (function() {
     renderer.setSize(w, h);
   }
 
-  return { init, updatePinLocation, flyTo, toggleAutoRotate };
+  return { init, updatePinLocation, flyTo, toggleAutoRotate, setRetracted };
 })();
 
 /**
@@ -1791,6 +1812,12 @@ function renderWeatherDashboard() {
   }
   dom.timezonePill.textContent = state.currentTimezone.replace(/_/g, " ");
 
+  // Mini Retractable Header Summary
+  if (dom.miniLocationFlag) dom.miniLocationFlag.textContent = getFlagEmoji(state.currentCountryCode) || "📍";
+  if (dom.miniLocationCity) dom.miniLocationCity.textContent = state.currentCity || "Selected Location";
+  if (dom.miniTempValue) dom.miniTempValue.textContent = `${formatTemp(current.temperature_2m)}°${state.unit}`;
+  if (dom.miniWeatherCond) dom.miniWeatherCond.textContent = codeInfo.label;
+
   // 2. Hero Temperature & Badges (Monochrome)
   const tempVal = formatTemp(current.temperature_2m);
   const feelsLikeVal = formatTemp(current.apparent_temperature);
@@ -2121,15 +2148,18 @@ function setupEventListeners() {
     });
   });
 
-  // 11. Minimize / Restore Dashboard
-  dom.minimizeBtn.addEventListener("click", () => {
-    dom.mainDashboard.classList.add("collapsed");
-  });
-
-  dom.reopenBtn.addEventListener("click", () => {
-    dom.mainDashboard.classList.remove("collapsed");
-    LocomotiveController.update();
-  });
+  // 11. Retractable Bottom Sheet Header & Toggle Button
+  if (dom.hudSheetToggleBtn) {
+    dom.hudSheetToggleBtn.addEventListener("click", () => {
+      state.isDashboardRetracted = !state.isDashboardRetracted;
+      dom.mainDashboard.classList.toggle("retracted", state.isDashboardRetracted);
+      if (dom.toggleTextHint) {
+        dom.toggleTextHint.textContent = state.isDashboardRetracted ? "Show Data" : "Hide Info";
+      }
+      ThreeGlobe.setRetracted(state.isDashboardRetracted);
+      showToast(state.isDashboardRetracted ? "Weather info retracted (Full Globe View)" : "Weather info expanded");
+    });
+  }
 
   // 12. Brand Click -> Global View
   dom.brandHomeBtn.addEventListener("click", () => {
