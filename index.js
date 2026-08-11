@@ -19,7 +19,7 @@ const state = {
   weatherData: null,
   unit: "C", // 'C' or 'F'
   activeTileLayerKey: "voyager",
-  viewMode: "2d", // '2d' (Leaflet) or '3d' (Three.js Globe)
+  viewMode: "3d", // '3d' (Three.js Globe Default) or '2d' (Leaflet)
   isAudioActive: false,
   liveClockInterval: null,
   marker: null,
@@ -924,21 +924,39 @@ const ThreeGlobe = (function() {
   function createCityPin() {
     cityPinGroup = new THREE.Group();
 
-    // Beacon Core (Crisp White)
-    const pinGeo = new THREE.SphereGeometry(0.16, 16, 16);
-    const pinMat = new THREE.MeshBasicMaterial({ color: 0xffffff });
-    const pin = new THREE.Mesh(pinGeo, pinMat);
-    cityPinGroup.add(pin);
+    // 1. Sharp Conical Pin Needle Stem pointing into the Earth's surface
+    const needleGeo = new THREE.ConeGeometry(0.12, 0.65, 16);
+    const needleMat = new THREE.MeshStandardMaterial({
+      color: 0xffffff,
+      metalness: 0.8,
+      roughness: 0.2
+    });
+    const needle = new THREE.Mesh(needleGeo, needleMat);
+    needle.rotation.x = Math.PI; // Point sharp cone tip down to surface at (0, 0, 0)
+    needle.position.y = 0.32;
+    cityPinGroup.add(needle);
 
-    // Glowing Beacon Line
-    const lineGeo = new THREE.CylinderGeometry(0.02, 0.02, 0.8, 8);
-    const lineMat = new THREE.MeshBasicMaterial({ color: 0xffffff, transparent: true, opacity: 0.85 });
-    const line = new THREE.Mesh(lineGeo, lineMat);
-    line.position.y = 0.4;
-    cityPinGroup.add(line);
+    // 2. Spherical Map Pin Head
+    const headGeo = new THREE.SphereGeometry(0.22, 24, 24);
+    const headMat = new THREE.MeshStandardMaterial({
+      color: 0xffffff,
+      metalness: 0.5,
+      roughness: 0.2
+    });
+    const head = new THREE.Mesh(headGeo, headMat);
+    head.position.y = 0.72;
+    cityPinGroup.add(head);
 
-    // Pulsing Ring
-    const ringGeo = new THREE.RingGeometry(0.18, 0.28, 32);
+    // 3. Inner Contrast Pin Core Eye
+    const dotGeo = new THREE.SphereGeometry(0.09, 16, 16);
+    const dotMat = new THREE.MeshBasicMaterial({ color: 0x000000 });
+    const dot = new THREE.Mesh(dotGeo, dotMat);
+    dot.position.y = 0.72;
+    dot.position.z = 0.15;
+    cityPinGroup.add(dot);
+
+    // 4. Glowing Surface Ground Wave / Pulse Ring
+    const ringGeo = new THREE.RingGeometry(0.12, 0.32, 32);
     const ringMat = new THREE.MeshBasicMaterial({
       color: 0xffffff,
       side: THREE.DoubleSide,
@@ -1417,6 +1435,12 @@ function init() {
     state.currentCity = saved.city || "Selected Location";
     state.currentCountry = saved.country || "";
     state.currentCountryCode = saved.countryCode || "";
+  }
+
+  document.body.classList.add("view-3d-mode");
+  document.body.classList.remove("view-2d-mode");
+  if (dom.viewModeLabel) {
+    dom.viewModeLabel.textContent = "2D Map";
   }
 
   initMap();
