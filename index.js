@@ -1384,39 +1384,14 @@ const ProceduralAudio = (function() {
  * ==========================================================================
  */
 const LocomotiveController = (function() {
-  let locoScroll = null;
-
   function init() {
     const scrollContainer = dom.weatherCardScrollBody;
-    if (!scrollContainer || typeof LocomotiveScroll === "undefined") return;
-
-    try {
-      locoScroll = new LocomotiveScroll({
-        el: scrollContainer,
-        smooth: true,
-        inertia: 0.8,
-        multiplier: 1.0,
-        tablet: { smooth: true },
-        smartphone: { smooth: false }
-      });
-
-      locoScroll.on("scroll", (args) => {
-        if (args.currentElements && args.currentElements["solar-section"]) {
-          const progress = args.currentElements["solar-section"].progress;
-          ThreeWidgets.updateSolarPosition(progress, true);
-        }
-      });
-    } catch (e) {
-      console.warn("Locomotive Scroll initialization fallback:", e);
-    }
+    if (!scrollContainer) return;
+    scrollContainer.style.scrollBehavior = "smooth";
   }
 
   function update() {
-    if (locoScroll) {
-      setTimeout(() => {
-        locoScroll.update();
-      }, 250);
-    }
+    // Container naturally handles updates
   }
 
   return { init, update };

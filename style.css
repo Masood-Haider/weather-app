@@ -691,10 +691,17 @@ body.view-3d-mode .mode-toggle-btn {
 .hud-left-pod {
   position: absolute;
   left: 20px;
-  top: 75px;
+  top: 86px;
   width: 320px;
   max-width: calc(100vw - 40px);
   overflow: hidden;
+}
+
+.hud-left-pod .hud-pod-inner {
+  padding: 16px 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
 }
 
 .location-header-block {
@@ -1073,9 +1080,9 @@ body.view-3d-mode .mode-toggle-btn {
 .hud-right-pod {
   position: absolute;
   right: 20px;
-  top: 75px;
+  top: 86px;
   bottom: 20px;
-  width: 310px;
+  width: 320px;
   max-width: calc(100vw - 40px);
   overflow: hidden;
 }
@@ -1083,17 +1090,25 @@ body.view-3d-mode .mode-toggle-btn {
 .hud-right-scroll {
   height: 100%;
   overflow-y: auto;
+  overflow-x: hidden;
+  padding: 16px 16px 36px 16px !important;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
   scrollbar-width: thin;
-  scrollbar-color: var(--border-card) transparent;
+  scrollbar-color: rgba(255, 255, 255, 0.25) transparent;
+  scroll-behavior: smooth;
+  overscroll-behavior: contain;
+  box-sizing: border-box;
 }
 
 .hud-right-scroll::-webkit-scrollbar {
-  width: 3px;
+  width: 4px;
 }
 
 .hud-right-scroll::-webkit-scrollbar-thumb {
-  background: var(--border-card);
-  border-radius: 3px;
+  background: rgba(255, 255, 255, 0.25);
+  border-radius: 4px;
 }
 
 .section-block {
