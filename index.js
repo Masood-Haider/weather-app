@@ -924,11 +924,11 @@ const ThreeGlobe = (function() {
   function createCityPin() {
     cityPinGroup = new THREE.Group();
 
-    // 1. Sleek Compact Conical Pin Needle Stem pointing down into the surface
+    // 1. Sleek Crimson/Metallic Conical Pin Needle Stem pointing into Earth's surface
     const needleGeo = new THREE.ConeGeometry(0.045, 0.28, 16);
     const needleMat = new THREE.MeshStandardMaterial({
-      color: 0xffffff,
-      metalness: 0.8,
+      color: 0xef4444,
+      metalness: 0.7,
       roughness: 0.2
     });
     const needle = new THREE.Mesh(needleGeo, needleMat);
@@ -936,32 +936,33 @@ const ThreeGlobe = (function() {
     needle.position.y = 0.14;
     cityPinGroup.add(needle);
 
-    // 2. Compact Spherical Map Pin Head
+    // 2. Vibrant Red Spherical Map Pin Head
     const headGeo = new THREE.SphereGeometry(0.085, 24, 24);
     const headMat = new THREE.MeshStandardMaterial({
-      color: 0xffffff,
-      metalness: 0.5,
+      color: 0xff2222,
+      emissive: 0x550000,
+      metalness: 0.3,
       roughness: 0.2
     });
     const head = new THREE.Mesh(headGeo, headMat);
     head.position.y = 0.31;
     cityPinGroup.add(head);
 
-    // 3. Inner Contrast Pin Core Eye
+    // 3. Inner White Contrast Pin Core Dot
     const dotGeo = new THREE.SphereGeometry(0.038, 16, 16);
-    const dotMat = new THREE.MeshBasicMaterial({ color: 0x000000 });
+    const dotMat = new THREE.MeshBasicMaterial({ color: 0xffffff });
     const dot = new THREE.Mesh(dotGeo, dotMat);
     dot.position.y = 0.31;
     dot.position.z = 0.06;
     cityPinGroup.add(dot);
 
-    // 4. Subtle Ground Surface Pulse Ring
+    // 4. Subtle Red Ground Surface Pulse Ring
     const ringGeo = new THREE.RingGeometry(0.05, 0.14, 32);
     const ringMat = new THREE.MeshBasicMaterial({
-      color: 0xffffff,
+      color: 0xff3b30,
       side: THREE.DoubleSide,
       transparent: true,
-      opacity: 0.8
+      opacity: 0.85
     });
     pinPulseRing = new THREE.Mesh(ringGeo, ringMat);
     pinPulseRing.rotation.x = Math.PI / 2;
