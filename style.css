@@ -210,6 +210,24 @@ body.view-3d-mode #globe-container {
 /* Leaflet Map Controls */
 .leaflet-container {
   font-family: var(--font-body) !important;
+  touch-action: pan-x pan-y pinch-zoom !important;
+  -webkit-tap-highlight-color: transparent;
+  outline: none;
+  background: #000000 !important;
+}
+
+.leaflet-tile {
+  will-change: transform, opacity;
+  transition: opacity 0.2s ease-in-out;
+}
+
+.leaflet-zoom-animated {
+  will-change: transform;
+  transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1) !important;
+}
+
+.leaflet-tile-container {
+  will-change: transform;
 }
 
 .leaflet-top {

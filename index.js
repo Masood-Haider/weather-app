@@ -1533,7 +1533,21 @@ function initMap() {
     minZoom: 2,
     maxZoom: 18,
     zoomControl: true,
-    worldCopyJump: true
+    worldCopyJump: true,
+    inertia: true,
+    inertiaDeceleration: 3400,
+    inertiaMaxSpeed: Infinity,
+    easeLinearity: 0.2,
+    zoomSnap: 0.5,
+    zoomDelta: 0.5,
+    wheelPxPerZoomLevel: 100,
+    zoomAnimation: true,
+    fadeAnimation: true,
+    markerZoomAnimation: true,
+    touchZoom: true,
+    scrollWheelZoom: true,
+    doubleClickZoom: true,
+    boxZoom: true
   });
 
   setTileLayer("voyager");
@@ -2171,6 +2185,9 @@ function setupEventListeners() {
 
       state.isDashboardRetracted = (sheetState === "retracted");
       ThreeGlobe.setRetracted(sheetState === "retracted");
+      if (mapInstance) {
+        setTimeout(() => mapInstance.invalidateSize(), 350);
+      }
 
       if (toastMsg) showToast(toastMsg);
     }
