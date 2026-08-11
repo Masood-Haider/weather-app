@@ -460,8 +460,30 @@ const ThreeGlobe = (function() {
     // City Pin Beacon
     createCityPin();
 
-    // Listeners
-    canvas.addEventListener("click", onGlobeClick);
+    // Pointer drag vs click tracking
+    let pointerDownPos = { x: 0, y: 0 };
+    let pointerDownTime = 0;
+
+    canvas.addEventListener("pointerdown", (e) => {
+      pointerDownPos.x = e.clientX;
+      pointerDownPos.y = e.clientY;
+      pointerDownTime = performance.now();
+    });
+
+    canvas.addEventListener("pointerup", (e) => {
+      if (isFlying || !camera || !renderer) return;
+
+      const dx = e.clientX - pointerDownPos.x;
+      const dy = e.clientY - pointerDownPos.y;
+      const dist = Math.sqrt(dx * dx + dy * dy);
+      const elapsed = performance.now() - pointerDownTime;
+
+      // If user dragged more than 6px or held for > 350ms, it was an orbital drag, not a click
+      if (dist > 6 || elapsed > 350) return;
+
+      onGlobeSelect(e);
+    });
+
     window.addEventListener("resize", onResize);
 
     isInitialized = true;
@@ -692,7 +714,7 @@ const ThreeGlobe = (function() {
     requestAnimationFrame(step);
   }
 
-  function onGlobeClick(event) {
+  function onGlobeSelect(event) {
     if (isFlying || !camera || !renderer) return;
 
     const rect = dom.globeCanvas.getBoundingClientRect();
