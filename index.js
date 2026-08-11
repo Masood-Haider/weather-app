@@ -862,22 +862,7 @@ const ThreeGlobe = (function() {
   }
 
   function createStarfield() {
-    const starCount = 1200;
-    const starGeo = new THREE.BufferGeometry();
-    const starPos = new Float32Array(starCount * 3);
-    for (let i = 0; i < starCount; i++) {
-      starPos[i * 3] = (Math.random() - 0.5) * 800;
-      starPos[i * 3 + 1] = (Math.random() - 0.5) * 800;
-      starPos[i * 3 + 2] = (Math.random() - 0.5) * 800;
-    }
-    starGeo.setAttribute("position", new THREE.BufferAttribute(starPos, 3));
-    const starMat = new THREE.PointsMaterial({
-      color: 0xffffff,
-      size: 1.2,
-      transparent: true,
-      opacity: 0.7
-    });
-    scene.add(new THREE.Points(starGeo, starMat));
+    // Deep space clean backdrop - no floating dots near globe
   }
 
   function createRealisticEarth() {
@@ -1292,9 +1277,8 @@ const ThreeWidgets = (function() {
 const ProceduralAudio = (function() {
   let audioCtx = null;
   let masterGain = null;
-  let rainNode = null;
-  let windNode = null;
-  let padNode = null;
+  let activeNodes = [];
+  let windNodes = [];
 
   function init() {
     if (audioCtx) return;
@@ -1302,7 +1286,7 @@ const ProceduralAudio = (function() {
       const AudioContext = window.AudioContext || window.webkitAudioContext;
       audioCtx = new AudioContext();
       masterGain = audioCtx.createGain();
-      masterGain.gain.setValueAtTime(0.3, audioCtx.currentTime);
+      masterGain.gain.setValueAtTime(0.32, audioCtx.currentTime);
       masterGain.connect(audioCtx.destination);
     } catch (e) {
       console.warn("Web Audio API not supported", e);
@@ -1335,29 +1319,108 @@ const ProceduralAudio = (function() {
     if (!state.isAudioActive || !audioCtx || !state.weatherData) return;
     stopAll();
 
-    const code = state.weatherData.current?.weather_code || 0;
+    const current = state.weatherData.current || {};
+    const code = current.weather_code || 0;
+    const windSpeed = current.wind_speed_10m || 10;
+    const temp = current.temperature_2m || 20;
+    const isDay = current.is_day === 1;
     const info = WEATHER_CODES[code] || { category: "clear" };
 
-    if (info.category === "rain" || info.category === "thunderstorm") {
-      startRainSound();
-    } else if (info.category === "snow" || (state.weatherData.current?.wind_speed_10m || 0) > 25) {
-      startWindSound();
-    } else {
-      startSunnyPadSound();
+    // 1. Dynamic Wind Audio (Present everywhere based on local wind velocity)
+    if (windSpeed > 2) {
+      startDynamicWindSound(windSpeed);
+    }
+
+    // 2. Weather Specific Audio Synthesis
+    if (info.category === "rain") {
+      startRainSound(code);
+    } else if (info.category === "thunderstorm") {
+      startRainSound(code);
+      startStormAmbience();
+    } else if (info.category === "snow") {
+      if (code === 75 || code === 86 || windSpeed > 30) {
+        startBlizzardSound();
+      } else {
+        startSnowSound();
+      }
+    } else if (info.category === "clear" || code === 0 || code === 1) {
+      if (temp >= 30) {
+        startHeatAmbience();
+      } else if (isDay) {
+        startSunnyAmbience();
+      } else {
+        startNightAmbience();
+      }
+    } else if (info.category === "clouds") {
+      startCloudAmbience();
     }
   }
 
-  function startRainSound() {
+  // 1. REALISTIC PROCEDURAL WIND (MODULATED GUSTS)
+  function startDynamicWindSound(speedKmH) {
     if (!audioCtx) return;
+    const speed = Math.max(3, speedKmH);
+    const bufferSize = audioCtx.sampleRate * 2;
+    const buffer = audioCtx.createBuffer(1, bufferSize, audioCtx.sampleRate);
+    const data = buffer.getChannelData(0);
+
+    // Pink / Brownian Noise Synthesis
+    let b0 = 0, b1 = 0, b2 = 0;
+    for (let i = 0; i < bufferSize; i++) {
+      const white = Math.random() * 2 - 1;
+      b0 = 0.99886 * b0 + white * 0.0555179;
+      b1 = 0.99332 * b1 + white * 0.0750759;
+      b2 = 0.96900 * b2 + white * 0.1538520;
+      data[i] = (b0 + b1 + b2 + white * 0.5362) * 0.12;
+    }
+
+    const noiseSource = audioCtx.createBufferSource();
+    noiseSource.buffer = buffer;
+    noiseSource.loop = true;
+
+    // Resonant Bandpass Filter tuned to wind speed
+    const centerFreq = Math.min(1200, 260 + speed * 14);
+    const filter = audioCtx.createBiquadFilter();
+    filter.type = "bandpass";
+    filter.frequency.setValueAtTime(centerFreq, audioCtx.currentTime);
+    filter.Q.setValueAtTime(2.2, audioCtx.currentTime);
+
+    // LFO for natural gust undulations
+    const lfo = audioCtx.createOscillator();
+    lfo.type = "sine";
+    lfo.frequency.setValueAtTime(0.18 + Math.min(0.4, speed * 0.005), audioCtx.currentTime);
+
+    const lfoGain = audioCtx.createGain();
+    lfoGain.gain.setValueAtTime(centerFreq * 0.45, audioCtx.currentTime);
+    lfo.connect(lfoGain);
+    lfoGain.connect(filter.frequency);
+
+    const gain = audioCtx.createGain();
+    const windVol = Math.min(0.28, 0.04 + (speed / 60) * 0.18);
+    gain.gain.setValueAtTime(windVol, audioCtx.currentTime);
+
+    noiseSource.connect(filter);
+    filter.connect(gain);
+    gain.connect(masterGain);
+
+    noiseSource.start();
+    lfo.start();
+    windNodes.push(noiseSource, lfo);
+  }
+
+  // 2. RAIN SOUND SYNTHESIZER
+  function startRainSound(code) {
+    if (!audioCtx) return;
+    const isHeavy = code === 65 || code === 82 || code === 95 || code === 99;
     const bufferSize = audioCtx.sampleRate * 2;
     const buffer = audioCtx.createBuffer(1, bufferSize, audioCtx.sampleRate);
     const data = buffer.getChannelData(0);
     let lastOut = 0.0;
     for (let i = 0; i < bufferSize; i++) {
       const white = Math.random() * 2 - 1;
-      data[i] = (lastOut + 0.02 * white) / 1.02;
+      data[i] = (lastOut + 0.025 * white) / 1.025;
       lastOut = data[i];
-      data[i] *= 3.5;
+      data[i] *= 3.8;
     }
 
     const noise = audioCtx.createBufferSource();
@@ -1366,51 +1429,24 @@ const ProceduralAudio = (function() {
 
     const filter = audioCtx.createBiquadFilter();
     filter.type = "lowpass";
-    filter.frequency.setValueAtTime(800, audioCtx.currentTime);
+    filter.frequency.setValueAtTime(isHeavy ? 1400 : 750, audioCtx.currentTime);
 
     const gain = audioCtx.createGain();
-    gain.gain.setValueAtTime(0.15, audioCtx.currentTime);
+    gain.gain.setValueAtTime(isHeavy ? 0.22 : 0.12, audioCtx.currentTime);
 
     noise.connect(filter);
     filter.connect(gain);
     gain.connect(masterGain);
     noise.start();
-    rainNode = { source: noise, gain };
+    activeNodes.push(noise);
   }
 
-  function startWindSound() {
-    if (!audioCtx) return;
-    const bufferSize = audioCtx.sampleRate * 2;
-    const buffer = audioCtx.createBuffer(1, bufferSize, audioCtx.sampleRate);
-    const data = buffer.getChannelData(0);
-    for (let i = 0; i < bufferSize; i++) {
-      data[i] = Math.random() * 2 - 1;
-    }
-
-    const noise = audioCtx.createBufferSource();
-    noise.buffer = buffer;
-    noise.loop = true;
-
-    const filter = audioCtx.createBiquadFilter();
-    filter.type = "bandpass";
-    filter.frequency.setValueAtTime(450, audioCtx.currentTime);
-    filter.Q.setValueAtTime(3.0, audioCtx.currentTime);
-
-    const gain = audioCtx.createGain();
-    gain.gain.setValueAtTime(0.12, audioCtx.currentTime);
-
-    noise.connect(filter);
-    filter.connect(gain);
-    gain.connect(masterGain);
-    noise.start();
-    windNode = { source: noise, gain };
-  }
-
-  function startSunnyPadSound() {
+  // 3. SNOW & WINTER HUSH SOUND
+  function startSnowSound() {
     if (!audioCtx) return;
     const osc = audioCtx.createOscillator();
     osc.type = "sine";
-    osc.frequency.setValueAtTime(220, audioCtx.currentTime);
+    osc.frequency.setValueAtTime(110, audioCtx.currentTime);
 
     const gain = audioCtx.createGain();
     gain.gain.setValueAtTime(0.04, audioCtx.currentTime);
@@ -1418,39 +1454,146 @@ const ProceduralAudio = (function() {
     osc.connect(gain);
     gain.connect(masterGain);
     osc.start();
-    padNode = { source: osc, gain };
+    activeNodes.push(osc);
   }
 
+  // 4. BLIZZARD & HOWLING GALE
+  function startBlizzardSound() {
+    if (!audioCtx) return;
+    const osc = audioCtx.createOscillator();
+    osc.type = "sawtooth";
+    osc.frequency.setValueAtTime(180, audioCtx.currentTime);
+
+    const filter = audioCtx.createBiquadFilter();
+    filter.type = "bandpass";
+    filter.frequency.setValueAtTime(620, audioCtx.currentTime);
+    filter.Q.setValueAtTime(5.0, audioCtx.currentTime);
+
+    const gain = audioCtx.createGain();
+    gain.gain.setValueAtTime(0.16, audioCtx.currentTime);
+
+    osc.connect(filter);
+    filter.connect(gain);
+    gain.connect(masterGain);
+    osc.start();
+    activeNodes.push(osc);
+  }
+
+  // 5. SUNNY & WARM AMBIENT HARMONIC SHIMMER
+  function startSunnyAmbience() {
+    if (!audioCtx) return;
+    const frequencies = [220, 277.18, 329.63]; // Warm A Major Chord
+    frequencies.forEach((freq, idx) => {
+      const osc = audioCtx.createOscillator();
+      osc.type = "sine";
+      osc.frequency.setValueAtTime(freq, audioCtx.currentTime);
+
+      const gain = audioCtx.createGain();
+      gain.gain.setValueAtTime(0.02 - idx * 0.005, audioCtx.currentTime);
+
+      osc.connect(gain);
+      gain.connect(masterGain);
+      osc.start();
+      activeNodes.push(osc);
+    });
+  }
+
+  // 6. HEAT WAVE AMBIENCE
+  function startHeatAmbience() {
+    if (!audioCtx) return;
+    const osc = audioCtx.createOscillator();
+    osc.type = "sine";
+    osc.frequency.setValueAtTime(160, audioCtx.currentTime);
+
+    const gain = audioCtx.createGain();
+    gain.gain.setValueAtTime(0.03, audioCtx.currentTime);
+
+    osc.connect(gain);
+    gain.connect(masterGain);
+    osc.start();
+    activeNodes.push(osc);
+  }
+
+  // 7. CLOUD & OVERCAST AMBIENCE
+  function startCloudAmbience() {
+    if (!audioCtx) return;
+    const osc = audioCtx.createOscillator();
+    osc.type = "sine";
+    osc.frequency.setValueAtTime(140, audioCtx.currentTime);
+
+    const gain = audioCtx.createGain();
+    gain.gain.setValueAtTime(0.025, audioCtx.currentTime);
+
+    osc.connect(gain);
+    gain.connect(masterGain);
+    osc.start();
+    activeNodes.push(osc);
+  }
+
+  // 8. NIGHT CLEAR AMBIENCE
+  function startNightAmbience() {
+    if (!audioCtx) return;
+    const osc = audioCtx.createOscillator();
+    osc.type = "sine";
+    osc.frequency.setValueAtTime(95, audioCtx.currentTime);
+
+    const gain = audioCtx.createGain();
+    gain.gain.setValueAtTime(0.03, audioCtx.currentTime);
+
+    osc.connect(gain);
+    gain.connect(masterGain);
+    osc.start();
+    activeNodes.push(osc);
+  }
+
+  // 9. THUNDERSTORM RUMBLE TRIGGER
   function triggerThunder() {
     if (!audioCtx || !state.isAudioActive) return;
     const osc = audioCtx.createOscillator();
     osc.type = "sawtooth";
     osc.frequency.setValueAtTime(55, audioCtx.currentTime);
-    osc.frequency.exponentialRampToValueAtTime(20, audioCtx.currentTime + 1.2);
+    osc.frequency.exponentialRampToValueAtTime(18, audioCtx.currentTime + 1.4);
 
     const gain = audioCtx.createGain();
-    gain.gain.setValueAtTime(0.4, audioCtx.currentTime);
-    gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 1.5);
+    gain.gain.setValueAtTime(0.38, audioCtx.currentTime);
+    gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 1.8);
 
     osc.connect(gain);
     gain.connect(masterGain);
     osc.start();
-    osc.stop(audioCtx.currentTime + 1.6);
+    osc.stop(audioCtx.currentTime + 1.9);
+  }
+
+  function startStormAmbience() {
+    if (!audioCtx) return;
+    const osc = audioCtx.createOscillator();
+    osc.type = "sawtooth";
+    osc.frequency.setValueAtTime(60, audioCtx.currentTime);
+
+    const filter = audioCtx.createBiquadFilter();
+    filter.type = "lowpass";
+    filter.frequency.setValueAtTime(120, audioCtx.currentTime);
+
+    const gain = audioCtx.createGain();
+    gain.gain.setValueAtTime(0.08, audioCtx.currentTime);
+
+    osc.connect(filter);
+    filter.connect(gain);
+    gain.connect(masterGain);
+    osc.start();
+    activeNodes.push(osc);
   }
 
   function stopAll() {
-    if (rainNode) {
-      try { rainNode.source.stop(); } catch (e) {}
-      rainNode = null;
-    }
-    if (windNode) {
-      try { windNode.source.stop(); } catch (e) {}
-      windNode = null;
-    }
-    if (padNode) {
-      try { padNode.source.stop(); } catch (e) {}
-      padNode = null;
-    }
+    activeNodes.forEach((node) => {
+      try { node.stop(); } catch (e) {}
+    });
+    activeNodes = [];
+
+    windNodes.forEach((node) => {
+      try { node.stop(); } catch (e) {}
+    });
+    windNodes = [];
   }
 
   return { init, toggle, updateSoundscape, triggerThunder };
