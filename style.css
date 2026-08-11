@@ -1377,7 +1377,7 @@ body.view-3d-mode .mode-toggle-btn {
 }
 
 /* ==========================================================================
-   RESPONSIVE BREAKPOINTS
+   RESPONSIVE BREAKPOINTS (MOBILE & TABLET OPTIMIZED)
    ========================================================================== */
 
 @media (max-width: 1200px) {
@@ -1389,12 +1389,23 @@ body.view-3d-mode .mode-toggle-btn {
 
 @media (max-width: 1024px) {
   .hud-spaces-container {
+    position: absolute;
+    top: auto;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    max-height: 64vh;
     overflow-y: auto;
+    overflow-x: hidden;
     pointer-events: auto;
-    padding: 75px 14px 20px 14px;
+    padding: 12px 16px calc(16px + env(safe-area-inset-bottom, 0px)) 16px;
     display: flex;
     flex-direction: column;
     gap: 12px;
+    scrollbar-width: thin;
+    scrollbar-color: rgba(255, 255, 255, 0.2) transparent;
+    -webkit-overflow-scrolling: touch;
+    z-index: 35;
   }
 
   .hud-left-pod, .hud-bottom-deck, .hud-right-pod {
@@ -1402,14 +1413,230 @@ body.view-3d-mode .mode-toggle-btn {
     width: 100%;
     max-width: 100%;
     transform: none;
+    box-sizing: border-box;
   }
 
   .hud-bottom-deck {
+    display: grid;
     grid-template-columns: repeat(2, 1fr);
+    gap: 8px;
+    max-width: 100%;
+  }
+
+  .hud-right-pod {
+    height: auto;
+    max-height: 400px;
   }
   
   .globe-hud {
-    position: static;
-    margin-top: 10px;
+    position: absolute;
+    top: auto;
+    bottom: calc(64vh + 10px);
+    left: 16px;
+    right: 16px;
+    width: auto;
+    justify-content: space-between;
+  }
+
+  #main-dashboard.collapsed + .globe-hud,
+  body:has(#main-dashboard.collapsed) .globe-hud {
+    bottom: 20px;
+  }
+}
+
+@media (max-width: 768px) {
+  .top-nav {
+    padding: 8px 12px;
+    gap: 8px;
+    flex-wrap: wrap;
+  }
+
+  .brand-badge {
+    padding: 5px 10px;
+    gap: 6px;
+  }
+
+  .brand-icon {
+    width: 20px;
+    height: 20px;
+  }
+
+  .brand-text h1 {
+    font-size: 13px;
+  }
+
+  .search-wrapper {
+    order: 3;
+    width: 100%;
+    max-width: 100%;
+    flex: none;
+    margin-top: 2px;
+  }
+
+  .search-box {
+    padding: 6px 10px;
+  }
+
+  .search-shortcut {
+    display: none;
+  }
+
+  .nav-actions {
+    gap: 4px;
+    overflow-x: auto;
+    scrollbar-width: none;
+    -webkit-overflow-scrolling: touch;
+    max-width: calc(100vw - 140px);
+    justify-content: flex-end;
+  }
+
+  .nav-actions::-webkit-scrollbar {
+    display: none;
+  }
+
+  .action-btn {
+    padding: 5px 9px;
+    font-size: 11px;
+    gap: 4px;
+    white-space: nowrap;
+    border-radius: var(--radius-sm);
+  }
+
+  .hud-spaces-container {
+    max-height: 60vh;
+    padding: 10px 10px calc(12px + env(safe-area-inset-bottom, 0px)) 10px;
+    gap: 10px;
+  }
+
+  .globe-hud {
+    bottom: calc(60vh + 8px);
+    left: 10px;
+    right: 10px;
+    padding: 0;
+  }
+
+  .globe-hud-pill {
+    padding: 4px 8px;
+    font-size: 10px;
+  }
+
+  .globe-ctrl-btn {
+    padding: 4px 8px;
+    font-size: 10px;
+  }
+
+  .hud-pod-inner {
+    padding: 12px 14px;
+  }
+
+  .hud-right-scroll {
+    padding: 12px 14px 24px 14px !important;
+  }
+}
+
+@media (max-width: 480px) {
+  .top-nav {
+    padding: 6px 10px;
+  }
+
+  .brand-text h1 {
+    font-size: 12px;
+  }
+
+  .action-btn span {
+    font-size: 10.5px;
+  }
+
+  .location-city {
+    font-size: 15px;
+  }
+
+  .live-time {
+    font-size: 12.5px;
+  }
+
+  .location-country-region {
+    font-size: 10px;
+  }
+
+  .location-elevation-badge {
+    font-size: 9px;
+    padding: 1px 4px;
+  }
+
+  .timezone-pill {
+    font-size: 8.5px;
+    max-width: 75px;
+  }
+
+  .weather-hero {
+    padding: 8px 10px;
+  }
+
+  #temp-value {
+    font-size: 30px;
+  }
+
+  .temp-apparent {
+    font-size: 10px;
+  }
+
+  .temp-high-low-badge {
+    font-size: 9.5px;
+  }
+
+  .weather-condition-title {
+    font-size: 11.5px;
+    max-width: 120px;
+  }
+
+  .weather-hero-icon-container {
+    width: 30px;
+    height: 30px;
+  }
+
+  .telemetry-card {
+    padding: 6px 10px;
+    min-width: 0;
+  }
+
+  .telemetry-val {
+    font-size: 14px;
+  }
+
+  .details-grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 5px;
+  }
+
+  .detail-card {
+    padding: 5px 8px;
+  }
+
+  .detail-card-val {
+    font-size: 12px;
+  }
+
+  .detail-card-sub {
+    font-size: 8.5px;
+  }
+
+  .hourly-card {
+    min-width: 58px;
+    padding: 6px 6px;
+  }
+
+  .daily-item {
+    padding: 4px 6px;
+  }
+
+  .daily-day {
+    font-size: 10.5px;
+    width: 32px;
+  }
+
+  .solar-3d-canvas {
+    width: 75px;
+    height: 28px;
   }
 }
