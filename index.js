@@ -217,10 +217,7 @@ const ThreeWeatherFX = (function() {
   let isSnow = false;
   let isBlizzard = false;
   let isStorm = false;
-  let isHeat = false;
-  let isFrost = false;
   let isFog = false;
-  let isSunny = false;
 
   let windTilt = 0;
   let windSpeedScalar = 1;
@@ -243,13 +240,10 @@ const ThreeWeatherFX = (function() {
     lightningLight.position.set(0, 100, 50);
     scene.add(lightningLight);
 
-    // Setup Atmospheric Particle Systems
+    // Setup Atmospheric Particle Systems (Strictly weather only)
     createRainSystem();
     createSnowSystem();
     createBlizzardSystem();
-    createSunbeamSystem();
-    createHeatWaveSystem();
-    createFrostSystem();
     createFogSystem();
 
     window.addEventListener("resize", onResize);
@@ -393,95 +387,7 @@ const ThreeWeatherFX = (function() {
     scene.add(blizzardPoints);
   }
 
-  // 4. THERMAL HEAT SHIMMER & MIRAGE WAVES
-  function createHeatWaveSystem() {
-    const count = 380;
-    heatGeo = new THREE.BufferGeometry();
-    const positions = new Float32Array(count * 3);
-    const phase = new Float32Array(count);
-
-    for (let i = 0; i < count; i++) {
-      positions[i * 3] = (Math.random() - 0.5) * 320;
-      positions[i * 3 + 1] = -90 + Math.random() * 80;
-      positions[i * 3 + 2] = (Math.random() - 0.5) * 120;
-      phase[i] = Math.random() * Math.PI * 2;
-    }
-
-    heatGeo.setAttribute("position", new THREE.BufferAttribute(positions, 3));
-    heatGeo.setAttribute("phase", new THREE.BufferAttribute(phase, 1));
-
-    const canvas = document.createElement("canvas");
-    canvas.width = 32;
-    canvas.height = 32;
-    const ctx = canvas.getContext("2d");
-    const rad = ctx.createRadialGradient(16, 16, 0, 16, 16, 16);
-    rad.addColorStop(0, "rgba(255, 255, 255, 0.8)");
-    rad.addColorStop(0.4, "rgba(255, 255, 255, 0.25)");
-    rad.addColorStop(1, "rgba(255, 255, 255, 0)");
-    ctx.fillStyle = rad;
-    ctx.beginPath();
-    ctx.arc(16, 16, 16, 0, Math.PI * 2);
-    ctx.fill();
-    const heatTex = new THREE.CanvasTexture(canvas);
-
-    heatMaterial = new THREE.PointsMaterial({
-      size: 6.0,
-      map: heatTex,
-      transparent: true,
-      opacity: 0,
-      blending: THREE.AdditiveBlending,
-      depthWrite: false
-    });
-
-    heatPoints = new THREE.Points(heatGeo, heatMaterial);
-    scene.add(heatPoints);
-  }
-
-  // 5. FREEZING FROST & CIRCULAR ICE CRYSTAL DUST
-  function createFrostSystem() {
-    const count = 500;
-    frostGeo = new THREE.BufferGeometry();
-    const positions = new Float32Array(count * 3);
-    const twinkle = new Float32Array(count);
-
-    for (let i = 0; i < count; i++) {
-      positions[i * 3] = (Math.random() - 0.5) * 320;
-      positions[i * 3 + 1] = (Math.random() - 0.5) * 200;
-      positions[i * 3 + 2] = (Math.random() - 0.5) * 140;
-      twinkle[i] = Math.random() * Math.PI * 2;
-    }
-
-    frostGeo.setAttribute("position", new THREE.BufferAttribute(positions, 3));
-    frostGeo.setAttribute("twinkle", new THREE.BufferAttribute(twinkle, 1));
-
-    const canvas = document.createElement("canvas");
-    canvas.width = 32;
-    canvas.height = 32;
-    const ctx = canvas.getContext("2d");
-    const rad = ctx.createRadialGradient(16, 16, 0, 16, 16, 12);
-    rad.addColorStop(0, "rgba(255, 255, 255, 1.0)");
-    rad.addColorStop(0.4, "rgba(255, 255, 255, 0.7)");
-    rad.addColorStop(1, "rgba(255, 255, 255, 0)");
-    ctx.fillStyle = rad;
-    ctx.beginPath();
-    ctx.arc(16, 16, 12, 0, Math.PI * 2);
-    ctx.fill();
-    const frostTex = new THREE.CanvasTexture(canvas);
-
-    frostMaterial = new THREE.PointsMaterial({
-      size: 3.0,
-      map: frostTex,
-      transparent: true,
-      opacity: 0,
-      blending: THREE.AdditiveBlending,
-      depthWrite: false
-    });
-
-    frostPoints = new THREE.Points(frostGeo, frostMaterial);
-    scene.add(frostPoints);
-  }
-
-  // 6. FOG & MIST WISPS
+  // 4. FOG & MIST WISPS
   function createFogSystem() {
     const count = 260;
     fogGeo = new THREE.BufferGeometry();
@@ -523,56 +429,6 @@ const ThreeWeatherFX = (function() {
     scene.add(fogPoints);
   }
 
-  // 7. SUNNY & CLEAR SKY GOLDEN SUNBEAM / PHOTON MOTES
-  function createSunbeamSystem() {
-    const count = 480;
-    sunbeamGeo = new THREE.BufferGeometry();
-    const positions = new Float32Array(count * 3);
-    const phase = new Float32Array(count);
-    const speed = new Float32Array(count);
-
-    for (let i = 0; i < count; i++) {
-      positions[i * 3] = (Math.random() - 0.5) * 320;
-      positions[i * 3 + 1] = Math.random() * 200 - 100;
-      positions[i * 3 + 2] = (Math.random() - 0.5) * 140;
-      phase[i] = Math.random() * Math.PI * 2;
-      speed[i] = 0.08 + Math.random() * 0.14;
-    }
-
-    sunbeamGeo.setAttribute("position", new THREE.BufferAttribute(positions, 3));
-    sunbeamGeo.setAttribute("phase", new THREE.BufferAttribute(phase, 1));
-    sunbeamGeo.setAttribute("speed", new THREE.BufferAttribute(speed, 1));
-
-    // Radiant Warm Golden Sun Photon Mote Texture
-    const canvas = document.createElement("canvas");
-    canvas.width = 48;
-    canvas.height = 48;
-    const ctx = canvas.getContext("2d");
-    const rad = ctx.createRadialGradient(24, 24, 0, 24, 24, 24);
-    rad.addColorStop(0, "rgba(255, 255, 255, 1.0)");
-    rad.addColorStop(0.25, "rgba(255, 248, 220, 0.85)");
-    rad.addColorStop(0.65, "rgba(255, 230, 160, 0.2)");
-    rad.addColorStop(1, "rgba(255, 220, 120, 0)");
-    ctx.fillStyle = rad;
-    ctx.beginPath();
-    ctx.arc(24, 24, 24, 0, Math.PI * 2);
-    ctx.fill();
-
-    const sunbeamTex = new THREE.CanvasTexture(canvas);
-
-    sunbeamMaterial = new THREE.PointsMaterial({
-      size: 3.8,
-      map: sunbeamTex,
-      transparent: true,
-      opacity: 0,
-      blending: THREE.AdditiveBlending,
-      depthWrite: false
-    });
-
-    sunbeamPoints = new THREE.Points(sunbeamGeo, sunbeamMaterial);
-    scene.add(sunbeamPoints);
-  }
-
   function updateWeather(code, isDay, windSpeed, windDeg, cloudCover, temperature) {
     if (!isInitialized) return;
 
@@ -584,10 +440,7 @@ const ThreeWeatherFX = (function() {
     isSnow = false;
     isBlizzard = false;
     isStorm = false;
-    isHeat = false;
-    isFrost = false;
     isFog = false;
-    isSunny = false;
 
     // 1. FREEZING COLD & SNOW CONDITIONS (Sub-zero or Snow WMO codes)
     if (temp <= 0 || info.category === "snow" || code === 71 || code === 73 || code === 75 || code === 77 || code === 85 || code === 86) {
@@ -597,7 +450,7 @@ const ThreeWeatherFX = (function() {
         isSnow = true;
       }
     } 
-    // 2. RAIN & STORMS
+    // 2. RAIN & STORMS (Above Freezing)
     else if (info.category === "rain") {
       isRain = true;
     } else if (info.category === "thunderstorm") {
@@ -607,17 +460,6 @@ const ThreeWeatherFX = (function() {
     // 3. FOG & MIST
     else if (info.category === "clouds" && (code === 45 || code === 48)) {
       isFog = true;
-    } 
-    // 4. WARM CLEAR / SUNNY SKY
-    else if (info.category === "clear" || code === 0 || code === 1) {
-      if (isDay && temp > 0) {
-        isSunny = true;
-      }
-    }
-
-    // 5. High Heat Shimmer Waves (hot days >= 30C, strictly when warm and dry)
-    if (temp >= 30 && !isRain && !isSnow && !isBlizzard) {
-      isHeat = true;
     }
 
     // Wind tilt calculation
@@ -633,18 +475,12 @@ const ThreeWeatherFX = (function() {
     const targetRainOp = isRain ? (isStorm ? 0.9 : 0.75) : 0;
     const targetSnowOp = isSnow ? 0.85 : 0;
     const targetBlizzardOp = isBlizzard ? 0.95 : 0;
-    const targetHeatOp = isHeat ? 0.65 : 0;
-    const targetFrostOp = isFrost ? 0.85 : 0;
     const targetFogOp = isFog ? 0.6 : 0;
-    const targetSunbeamOp = isSunny ? 0.85 : 0;
 
     rainMaterial.opacity += (targetRainOp - rainMaterial.opacity) * 0.05;
     snowMaterial.opacity += (targetSnowOp - snowMaterial.opacity) * 0.05;
     blizzardMaterial.opacity += (targetBlizzardOp - blizzardMaterial.opacity) * 0.05;
-    heatMaterial.opacity += (targetHeatOp - heatMaterial.opacity) * 0.05;
-    frostMaterial.opacity += (targetFrostOp - frostMaterial.opacity) * 0.05;
     fogMaterial.opacity += (targetFogOp - fogMaterial.opacity) * 0.05;
-    sunbeamMaterial.opacity += (targetSunbeamOp - sunbeamMaterial.opacity) * 0.05;
 
     // 1. Rain Physics
     if (rainMaterial.opacity > 0.01) {
@@ -694,57 +530,7 @@ const ThreeWeatherFX = (function() {
       blizzardGeo.attributes.position.needsUpdate = true;
     }
 
-    // 4. Sunny Sunbeam / Golden Solar Photon Motes Physics (Gentle upward solar drift)
-    if (sunbeamMaterial.opacity > 0.01) {
-      const pos = sunbeamGeo.attributes.position.array;
-      const phase = sunbeamGeo.attributes.phase.array;
-      const speed = sunbeamGeo.attributes.speed.array;
-      for (let i = 0; i < pos.length / 3; i++) {
-        phase[i] += 0.02;
-        pos[i * 3 + 1] += speed[i];
-        pos[i * 3] += Math.sin(phase[i]) * 0.15;
-        pos[i * 3 + 2] += Math.cos(phase[i]) * 0.1;
-        if (pos[i * 3 + 1] > 100) {
-          pos[i * 3 + 1] = -100;
-          pos[i * 3] = (Math.random() - 0.5) * 320;
-        }
-      }
-      sunbeamGeo.attributes.position.needsUpdate = true;
-    }
-
-    // 5. Heat Shimmer Mirage Physics
-    if (heatMaterial.opacity > 0.01) {
-      const pos = heatGeo.attributes.position.array;
-      const ph = heatGeo.attributes.phase.array;
-      for (let i = 0; i < pos.length / 3; i++) {
-        ph[i] += 0.04;
-        pos[i * 3 + 1] += 0.55;
-        pos[i * 3] += Math.sin(ph[i]) * 0.35;
-        if (pos[i * 3 + 1] > 30) {
-          pos[i * 3 + 1] = -90;
-          pos[i * 3] = (Math.random() - 0.5) * 320;
-        }
-      }
-      heatGeo.attributes.position.needsUpdate = true;
-    }
-
-    // 6. Freezing Frost & Ice Crystal Twinkle
-    if (frostMaterial.opacity > 0.01) {
-      const pos = frostGeo.attributes.position.array;
-      const tw = frostGeo.attributes.twinkle.array;
-      for (let i = 0; i < pos.length / 3; i++) {
-        tw[i] += 0.03;
-        pos[i * 3 + 1] -= 0.15;
-        pos[i * 3] += Math.sin(tw[i]) * 0.2;
-        if (pos[i * 3 + 1] < -100) {
-          pos[i * 3 + 1] = 100;
-          pos[i * 3] = (Math.random() - 0.5) * 320;
-        }
-      }
-      frostGeo.attributes.position.needsUpdate = true;
-    }
-
-    // 7. Fog & Mist Drift Physics
+    // 4. Fog & Mist Drift Physics
     if (fogMaterial.opacity > 0.01) {
       const pos = fogGeo.attributes.position.array;
       const spd = fogGeo.attributes.speed.array;
