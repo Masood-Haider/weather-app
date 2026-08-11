@@ -924,8 +924,8 @@ const ThreeGlobe = (function() {
   function createCityPin() {
     cityPinGroup = new THREE.Group();
 
-    // 1. Sharp Conical Pin Needle Stem pointing into the Earth's surface
-    const needleGeo = new THREE.ConeGeometry(0.12, 0.65, 16);
+    // 1. Sleek Compact Conical Pin Needle Stem pointing down into the surface
+    const needleGeo = new THREE.ConeGeometry(0.045, 0.28, 16);
     const needleMat = new THREE.MeshStandardMaterial({
       color: 0xffffff,
       metalness: 0.8,
@@ -933,30 +933,30 @@ const ThreeGlobe = (function() {
     });
     const needle = new THREE.Mesh(needleGeo, needleMat);
     needle.rotation.x = Math.PI; // Point sharp cone tip down to surface at (0, 0, 0)
-    needle.position.y = 0.32;
+    needle.position.y = 0.14;
     cityPinGroup.add(needle);
 
-    // 2. Spherical Map Pin Head
-    const headGeo = new THREE.SphereGeometry(0.22, 24, 24);
+    // 2. Compact Spherical Map Pin Head
+    const headGeo = new THREE.SphereGeometry(0.085, 24, 24);
     const headMat = new THREE.MeshStandardMaterial({
       color: 0xffffff,
       metalness: 0.5,
       roughness: 0.2
     });
     const head = new THREE.Mesh(headGeo, headMat);
-    head.position.y = 0.72;
+    head.position.y = 0.31;
     cityPinGroup.add(head);
 
     // 3. Inner Contrast Pin Core Eye
-    const dotGeo = new THREE.SphereGeometry(0.09, 16, 16);
+    const dotGeo = new THREE.SphereGeometry(0.038, 16, 16);
     const dotMat = new THREE.MeshBasicMaterial({ color: 0x000000 });
     const dot = new THREE.Mesh(dotGeo, dotMat);
-    dot.position.y = 0.72;
-    dot.position.z = 0.15;
+    dot.position.y = 0.31;
+    dot.position.z = 0.06;
     cityPinGroup.add(dot);
 
-    // 4. Glowing Surface Ground Wave / Pulse Ring
-    const ringGeo = new THREE.RingGeometry(0.12, 0.32, 32);
+    // 4. Subtle Ground Surface Pulse Ring
+    const ringGeo = new THREE.RingGeometry(0.05, 0.14, 32);
     const ringMat = new THREE.MeshBasicMaterial({
       color: 0xffffff,
       side: THREE.DoubleSide,
@@ -997,7 +997,7 @@ const ThreeGlobe = (function() {
 
   function updatePinLocation(lat, lng) {
     if (!cityPinGroup) return;
-    const pos = latLngToVector3(lat, lng, 5.12);
+    const pos = latLngToVector3(lat, lng, 5.04);
     cityPinGroup.position.copy(pos);
     cityPinGroup.quaternion.setFromUnitVectors(new THREE.Vector3(0, 1, 0), pos.clone().normalize());
 
@@ -1514,8 +1514,8 @@ function initMap() {
       <div class="pin-pulse pin-pulse-delay"></div>
       <div class="pin-core"></div>
     `,
-    iconSize: [44, 44],
-    iconAnchor: [22, 22]
+    iconSize: [28, 28],
+    iconAnchor: [14, 14]
   });
 
   state.marker = L.marker([state.currentLat, state.currentLng], { icon: customIcon }).addTo(mapInstance);
