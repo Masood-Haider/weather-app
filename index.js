@@ -2148,16 +2148,113 @@ function setupEventListeners() {
     });
   });
 
-  // 11. Retractable Bottom Sheet Header & Toggle Button
+  // 11. Multi-State Drag & Swipe Sheet Controller (Retracted <-> Half <-> Fullscreen)
   if (dom.hudSheetToggleBtn) {
-    dom.hudSheetToggleBtn.addEventListener("click", () => {
-      state.isDashboardRetracted = !state.isDashboardRetracted;
-      dom.mainDashboard.classList.toggle("retracted", state.isDashboardRetracted);
-      if (dom.toggleTextHint) {
-        dom.toggleTextHint.textContent = state.isDashboardRetracted ? "Show Data" : "Hide Info";
+    let sheetState = "half"; // "retracted" | "half" | "fullscreen"
+    let touchStartY = 0;
+    let touchCurrentY = 0;
+    let isDraggingHandle = false;
+
+    function applySheetState(newState, toastMsg) {
+      sheetState = newState;
+      dom.mainDashboard.classList.remove("sheet-retracted", "sheet-half", "sheet-fullscreen", "retracted");
+      dom.mainDashboard.classList.add(`sheet-${sheetState}`);
+      if (sheetState === "retracted") {
+        dom.mainDashboard.classList.add("retracted");
       }
-      ThreeGlobe.setRetracted(state.isDashboardRetracted);
-      showToast(state.isDashboardRetracted ? "Weather info retracted (Full Globe View)" : "Weather info expanded");
+
+      if (dom.toggleTextHint) {
+        if (sheetState === "retracted") dom.toggleTextHint.textContent = "Show Data";
+        else if (sheetState === "fullscreen") dom.toggleTextHint.textContent = "Collapse";
+        else dom.toggleTextHint.textContent = "Hide Info";
+      }
+
+      state.isDashboardRetracted = (sheetState === "retracted");
+      ThreeGlobe.setRetracted(sheetState === "retracted");
+
+      if (toastMsg) showToast(toastMsg);
+    }
+
+    // Touch events on the top grey bar / drag handle
+    dom.hudSheetToggleBtn.addEventListener("touchstart", (e) => {
+      if (e.touches.length > 0) {
+        touchStartY = e.touches[0].clientY;
+        touchCurrentY = touchStartY;
+        isDraggingHandle = true;
+      }
+    }, { passive: true });
+
+    window.addEventListener("touchmove", (e) => {
+      if (!isDraggingHandle || e.touches.length === 0) return;
+      touchCurrentY = e.touches[0].clientY;
+    }, { passive: true });
+
+    window.addEventListener("touchend", () => {
+      if (!isDraggingHandle) return;
+      isDraggingHandle = false;
+      const deltaY = touchStartY - touchCurrentY; // Positive = Drag UP, Negative = Drag DOWN
+
+      if (deltaY > 35) {
+        // Dragged UP
+        if (sheetState === "retracted") {
+          applySheetState("half", "Weather info half screen");
+        } else if (sheetState === "half") {
+          applySheetState("fullscreen", "Weather info full screen");
+        }
+      } else if (deltaY < -35) {
+        // Dragged DOWN
+        if (sheetState === "fullscreen") {
+          applySheetState("half", "Weather info half screen");
+        } else if (sheetState === "half") {
+          applySheetState("retracted", "Weather info retracted (Full globe view)");
+        }
+      }
+    });
+
+    // Pointer events for mouse dragging
+    dom.hudSheetToggleBtn.addEventListener("pointerdown", (e) => {
+      touchStartY = e.clientY;
+      touchCurrentY = touchStartY;
+      isDraggingHandle = true;
+    });
+
+    window.addEventListener("pointermove", (e) => {
+      if (!isDraggingHandle) return;
+      touchCurrentY = e.clientY;
+    });
+
+    window.addEventListener("pointerup", () => {
+      if (!isDraggingHandle) return;
+      isDraggingHandle = false;
+      const deltaY = touchStartY - touchCurrentY;
+
+      if (deltaY > 35) {
+        if (sheetState === "retracted") {
+          applySheetState("half", "Weather info half screen");
+        } else if (sheetState === "half") {
+          applySheetState("fullscreen", "Weather info full screen");
+        }
+      } else if (deltaY < -35) {
+        if (sheetState === "fullscreen") {
+          applySheetState("half", "Weather info half screen");
+        } else if (sheetState === "half") {
+          applySheetState("retracted", "Weather info retracted (Full globe view)");
+        }
+      }
+    });
+
+    // Quick Tap / Click on the bar or chevron button
+    dom.hudSheetToggleBtn.addEventListener("click", () => {
+      const deltaY = Math.abs(touchStartY - touchCurrentY);
+      if (deltaY < 12) {
+        if (sheetState === "retracted") {
+          applySheetState("half", "Weather info expanded");
+        } else if (sheetState === "fullscreen") {
+          applySheetState("half", "Weather info half screen");
+        } else {
+          applySheetState("retracted", "Weather info retracted (Full globe view)");
+        }
+      }
     });
   }
 
