@@ -205,7 +205,6 @@ const ThreeWeatherFX = (function() {
   let scene, camera, renderer;
   let rainGeo, rainPoints, rainMaterial;
   let snowGeo, snowPoints, snowMaterial;
-  let sunMesh, sunGlowMesh, sunParticles;
   let lightningLight, lightningTimer = 0;
   let activeMode = "clear";
   let windTilt = 0;
@@ -232,7 +231,6 @@ const ThreeWeatherFX = (function() {
     // Setup Weather Particle Systems
     createRainSystem();
     createSnowSystem();
-    createSunSystem();
 
     window.addEventListener("resize", onResize);
     isInitialized = true;
@@ -324,56 +322,6 @@ const ThreeWeatherFX = (function() {
     scene.add(snowPoints);
   }
 
-  function createSunSystem() {
-    const sunGroup = new THREE.Group();
-
-    // 3D Sun Sphere
-    const sunGeo = new THREE.SphereGeometry(14, 32, 32);
-    const sunMat = new THREE.MeshBasicMaterial({
-      color: 0xffffff,
-      transparent: true,
-      opacity: 0
-    });
-    sunMesh = new THREE.Mesh(sunGeo, sunMat);
-    sunMesh.position.set(90, 55, -20);
-    sunGroup.add(sunMesh);
-
-    // Sun Glow Halo
-    const glowGeo = new THREE.SphereGeometry(24, 32, 32);
-    const glowMat = new THREE.MeshBasicMaterial({
-      color: 0xe5e5e5,
-      transparent: true,
-      opacity: 0,
-      side: THREE.BackSide,
-      blending: THREE.AdditiveBlending
-    });
-    sunGlowMesh = new THREE.Mesh(glowGeo, glowMat);
-    sunGlowMesh.position.copy(sunMesh.position);
-    sunGroup.add(sunGlowMesh);
-
-    // Warm Sun Photons
-    const photonCount = 400;
-    const photonGeo = new THREE.BufferGeometry();
-    const photonPos = new Float32Array(photonCount * 3);
-    for (let i = 0; i < photonCount; i++) {
-      photonPos[i * 3] = (Math.random() - 0.5) * 300;
-      photonPos[i * 3 + 1] = (Math.random() - 0.5) * 200;
-      photonPos[i * 3 + 2] = (Math.random() - 0.5) * 100;
-    }
-    photonGeo.setAttribute("position", new THREE.BufferAttribute(photonPos, 3));
-    const photonMat = new THREE.PointsMaterial({
-      size: 2.5,
-      color: 0xffffff,
-      transparent: true,
-      opacity: 0,
-      blending: THREE.AdditiveBlending
-    });
-    sunParticles = new THREE.Points(photonGeo, photonMat);
-    sunGroup.add(sunParticles);
-
-    scene.add(sunGroup);
-  }
-
   function updateWeather(code, isDay, windSpeed, windDeg, cloudCover) {
     if (!isInitialized) return;
 
@@ -391,14 +339,10 @@ const ThreeWeatherFX = (function() {
 
     const targetRainOp = (activeMode === "rain" || activeMode === "thunderstorm") ? 0.75 : 0;
     const targetSnowOp = (activeMode === "snow") ? 0.85 : 0;
-    const targetSunOp = (activeMode === "clear") ? 0.8 : 0;
 
     // Smooth opacity lerping
     rainMaterial.opacity += (targetRainOp - rainMaterial.opacity) * 0.05;
     snowMaterial.opacity += (targetSnowOp - snowMaterial.opacity) * 0.05;
-    sunMesh.material.opacity += (targetSunOp - sunMesh.material.opacity) * 0.05;
-    sunGlowMesh.material.opacity += (targetSunOp * 0.4 - sunGlowMesh.material.opacity) * 0.05;
-    sunParticles.material.opacity += (targetSunOp * 0.5 - sunParticles.material.opacity) * 0.05;
 
     // Rain Simulation
     if (rainMaterial.opacity > 0.01) {
@@ -430,16 +374,6 @@ const ThreeWeatherFX = (function() {
         }
       }
       snowGeo.attributes.position.needsUpdate = true;
-    }
-
-    // Sun Photons Float
-    if (sunParticles.material.opacity > 0.01) {
-      const positions = sunParticles.geometry.attributes.position.array;
-      for (let i = 0; i < positions.length / 3; i++) {
-        positions[i * 3 + 1] += 0.15;
-        if (positions[i * 3 + 1] > 100) positions[i * 3 + 1] = -100;
-      }
-      sunParticles.geometry.attributes.position.needsUpdate = true;
     }
 
     // Thunderstorm Lightning Flash

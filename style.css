@@ -204,13 +204,17 @@ body.view-3d-mode #globe-container {
   font-family: var(--font-body) !important;
 }
 
+.leaflet-top {
+  top: 130px !important;
+}
+
 .leaflet-control-zoom {
   border: 1px solid var(--border-card) !important;
   box-shadow: var(--shadow-card) !important;
   border-radius: var(--radius-md) !important;
   overflow: hidden;
-  margin-bottom: 22px !important;
-  margin-left: 20px !important;
+  margin-top: 10px !important;
+  margin-left: 22px !important;
 }
 
 .leaflet-control-zoom a {
