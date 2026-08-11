@@ -1158,21 +1158,21 @@ const ThreeWidgets = (function() {
     if (!canvas || typeof THREE === "undefined") return;
 
     solarScene = new THREE.Scene();
-    solarCamera = new THREE.PerspectiveCamera(50, 220 / 74, 0.1, 100);
+    solarCamera = new THREE.PerspectiveCamera(50, 100 / 36, 0.1, 100);
     solarCamera.position.set(0, 0, 6);
 
     solarRenderer = new THREE.WebGLRenderer({ canvas, alpha: true, antialias: true });
-    solarRenderer.setSize(220, 74);
+    solarRenderer.setSize(100, 36);
     solarRenderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
 
     // 3D Sun (Crisp White)
-    const sunGeo = new THREE.SphereGeometry(0.42, 24, 24);
+    const sunGeo = new THREE.SphereGeometry(0.38, 24, 24);
     const sunMat = new THREE.MeshBasicMaterial({ color: 0xffffff });
     solarSun = new THREE.Mesh(sunGeo, sunMat);
     solarScene.add(solarSun);
 
     // 3D Moon
-    const moonGeo = new THREE.SphereGeometry(0.36, 24, 24);
+    const moonGeo = new THREE.SphereGeometry(0.32, 24, 24);
     const moonMat = new THREE.MeshBasicMaterial({ color: 0xcccccc });
     solarMoon = new THREE.Mesh(moonGeo, moonMat);
     solarMoon.position.set(0, -10, 0);
