@@ -86,13 +86,13 @@ const WEATHER_CODES = {
   51: { label: "Light Drizzle", icon: "drizzle", status: "Light Precipitation", category: "rain" },
   53: { label: "Moderate Drizzle", icon: "drizzle", status: "Passing Drizzle", category: "rain" },
   55: { label: "Dense Drizzle", icon: "drizzle", status: "Continuous Wet Mist", category: "rain" },
-  56: { label: "Light Freezing Drizzle", icon: "snow", status: "Icy Mist", category: "snow" },
-  57: { label: "Dense Freezing Drizzle", icon: "snow", status: "Slick Road Warning", category: "snow" },
+  56: { label: "Light Freezing Drizzle", icon: "rain-light", status: "Icy Mist", category: "rain" },
+  57: { label: "Dense Freezing Drizzle", icon: "rain", status: "Slick Road Warning", category: "rain" },
   61: { label: "Slight Rain", icon: "rain-light", status: "Light Rain Expected", category: "rain" },
   63: { label: "Moderate Rain", icon: "rain", status: "Umbrella Recommended", category: "rain" },
   65: { label: "Heavy Rain", icon: "rain-heavy", status: "Heavy Downpour", category: "rain" },
-  66: { label: "Light Freezing Rain", icon: "snow", status: "Freezing Rain Hazard", category: "snow" },
-  67: { label: "Heavy Freezing Rain", icon: "snow", status: "Severe Ice Formation", category: "snow" },
+  66: { label: "Light Freezing Rain", icon: "rain-light", status: "Freezing Rain Hazard", category: "rain" },
+  67: { label: "Heavy Freezing Rain", icon: "rain-heavy", status: "Severe Ice Formation", category: "rain" },
   71: { label: "Slight Snow Fall", icon: "snow-light", status: "Light Flurries", category: "snow" },
   73: { label: "Moderate Snow Fall", icon: "snow", status: "Snow Accumulation", category: "snow" },
   75: { label: "Heavy Snow Fall", icon: "snow-heavy", status: "Heavy Snowfall Warning", category: "snow" },
@@ -209,9 +209,10 @@ const ThreeWeatherFX = (function() {
   let heatGeo, heatPoints, heatMaterial;
   let frostGeo, frostPoints, frostMaterial;
   let fogGeo, fogPoints, fogMaterial;
+  let sunbeamGeo, sunbeamPoints, sunbeamMaterial;
   let lightningLight, lightningTimer = 0;
 
-  // Active state booleans
+  // Active atmospheric mode triggers
   let isRain = false;
   let isSnow = false;
   let isBlizzard = false;
@@ -219,6 +220,7 @@ const ThreeWeatherFX = (function() {
   let isHeat = false;
   let isFrost = false;
   let isFog = false;
+  let isSunny = false;
 
   let windTilt = 0;
   let windSpeedScalar = 1;
@@ -245,6 +247,7 @@ const ThreeWeatherFX = (function() {
     createRainSystem();
     createSnowSystem();
     createBlizzardSystem();
+    createSunbeamSystem();
     createHeatWaveSystem();
     createFrostSystem();
     createFogSystem();
@@ -520,6 +523,56 @@ const ThreeWeatherFX = (function() {
     scene.add(fogPoints);
   }
 
+  // 7. SUNNY & CLEAR SKY GOLDEN SUNBEAM / PHOTON MOTES
+  function createSunbeamSystem() {
+    const count = 480;
+    sunbeamGeo = new THREE.BufferGeometry();
+    const positions = new Float32Array(count * 3);
+    const phase = new Float32Array(count);
+    const speed = new Float32Array(count);
+
+    for (let i = 0; i < count; i++) {
+      positions[i * 3] = (Math.random() - 0.5) * 320;
+      positions[i * 3 + 1] = Math.random() * 200 - 100;
+      positions[i * 3 + 2] = (Math.random() - 0.5) * 140;
+      phase[i] = Math.random() * Math.PI * 2;
+      speed[i] = 0.08 + Math.random() * 0.14;
+    }
+
+    sunbeamGeo.setAttribute("position", new THREE.BufferAttribute(positions, 3));
+    sunbeamGeo.setAttribute("phase", new THREE.BufferAttribute(phase, 1));
+    sunbeamGeo.setAttribute("speed", new THREE.BufferAttribute(speed, 1));
+
+    // Radiant Warm Golden Sun Photon Mote Texture
+    const canvas = document.createElement("canvas");
+    canvas.width = 48;
+    canvas.height = 48;
+    const ctx = canvas.getContext("2d");
+    const rad = ctx.createRadialGradient(24, 24, 0, 24, 24, 24);
+    rad.addColorStop(0, "rgba(255, 255, 255, 1.0)");
+    rad.addColorStop(0.25, "rgba(255, 248, 220, 0.85)");
+    rad.addColorStop(0.65, "rgba(255, 230, 160, 0.2)");
+    rad.addColorStop(1, "rgba(255, 220, 120, 0)");
+    ctx.fillStyle = rad;
+    ctx.beginPath();
+    ctx.arc(24, 24, 24, 0, Math.PI * 2);
+    ctx.fill();
+
+    const sunbeamTex = new THREE.CanvasTexture(canvas);
+
+    sunbeamMaterial = new THREE.PointsMaterial({
+      size: 3.8,
+      map: sunbeamTex,
+      transparent: true,
+      opacity: 0,
+      blending: THREE.AdditiveBlending,
+      depthWrite: false
+    });
+
+    sunbeamPoints = new THREE.Points(sunbeamGeo, sunbeamMaterial);
+    scene.add(sunbeamPoints);
+  }
+
   function updateWeather(code, isDay, windSpeed, windDeg, cloudCover, temperature) {
     if (!isInitialized) return;
 
@@ -534,6 +587,7 @@ const ThreeWeatherFX = (function() {
     isHeat = false;
     isFrost = false;
     isFog = false;
+    isSunny = false;
 
     if (info.category === "rain") {
       isRain = true;
@@ -541,20 +595,23 @@ const ThreeWeatherFX = (function() {
       isRain = true;
       isStorm = true;
     } else if (info.category === "snow") {
-      if (code === 75 || code === 85 || code === 86 || (windSpeed || 0) > 22) {
+      // Differentiate intense horizontal blizzard vs gentle snowfall
+      if (code === 75 || code === 86 || (windSpeed || 0) > 30) {
         isBlizzard = true;
       } else {
         isSnow = true;
       }
     } else if (info.category === "clouds" && (code === 45 || code === 48)) {
       isFog = true;
+    } else if (info.category === "clear" || code === 0 || code === 1) {
+      if (isDay) {
+        isSunny = true;
+      }
     }
 
-    // Graphical Thermal Cues (Heat Waves & Frost Crystals)
-    if (temp >= 29 && !isRain && !isSnow && !isBlizzard) {
+    // High Heat Shimmer Waves (hot days >= 30C, strictly when not raining or snowing)
+    if (temp >= 30 && !isRain && !isSnow && !isBlizzard) {
       isHeat = true;
-    } else if (temp <= 1 && !isRain && !isBlizzard) {
-      isFrost = true;
     }
 
     // Wind tilt calculation
@@ -573,6 +630,7 @@ const ThreeWeatherFX = (function() {
     const targetHeatOp = isHeat ? 0.65 : 0;
     const targetFrostOp = isFrost ? 0.85 : 0;
     const targetFogOp = isFog ? 0.6 : 0;
+    const targetSunbeamOp = isSunny ? 0.85 : 0;
 
     rainMaterial.opacity += (targetRainOp - rainMaterial.opacity) * 0.05;
     snowMaterial.opacity += (targetSnowOp - snowMaterial.opacity) * 0.05;
@@ -580,6 +638,7 @@ const ThreeWeatherFX = (function() {
     heatMaterial.opacity += (targetHeatOp - heatMaterial.opacity) * 0.05;
     frostMaterial.opacity += (targetFrostOp - frostMaterial.opacity) * 0.05;
     fogMaterial.opacity += (targetFogOp - fogMaterial.opacity) * 0.05;
+    sunbeamMaterial.opacity += (targetSunbeamOp - sunbeamMaterial.opacity) * 0.05;
 
     // 1. Rain Physics
     if (rainMaterial.opacity > 0.01) {
@@ -596,7 +655,7 @@ const ThreeWeatherFX = (function() {
       rainGeo.attributes.position.needsUpdate = true;
     }
 
-    // 2. Snow Physics
+    // 2. Snow Physics (Gentle peaceful downward floating)
     if (snowMaterial.opacity > 0.01) {
       const pos = snowGeo.attributes.position.array;
       const wander = snowGeo.attributes.wander.array;
@@ -614,13 +673,14 @@ const ThreeWeatherFX = (function() {
       snowGeo.attributes.position.needsUpdate = true;
     }
 
-    // 3. Blizzard Gale Vortex Physics
+    // 3. Blizzard Gale Vortex Physics (Intense fast horizontal wind flurry streaks)
     if (blizzardMaterial.opacity > 0.01) {
       const pos = blizzardGeo.attributes.position.array;
       const spd = blizzardGeo.attributes.speed.array;
       for (let i = 0; i < pos.length / 3; i++) {
-        pos[i * 3] += spd[i] * (windTilt >= 0 ? 1.5 : -1.5) * windSpeedScalar;
-        pos[i * 3 + 1] -= 1.8 * windSpeedScalar;
+        pos[i * 3] += spd[i] * 1.6 * (windTilt >= 0 ? 1.4 : -1.4);
+        pos[i * 3 + 1] -= 2.0 * windSpeedScalar;
+        pos[i * 3 + 2] += (Math.sin(pos[i * 3] * 0.04) - 0.5) * 0.4;
         if (pos[i * 3] > 180) pos[i * 3] = -180;
         if (pos[i * 3] < -180) pos[i * 3] = 180;
         if (pos[i * 3 + 1] < -110) pos[i * 3 + 1] = 110;
@@ -628,7 +688,25 @@ const ThreeWeatherFX = (function() {
       blizzardGeo.attributes.position.needsUpdate = true;
     }
 
-    // 4. Heat Shimmer Mirage Physics
+    // 4. Sunny Sunbeam / Golden Solar Photon Motes Physics (Gentle upward solar drift)
+    if (sunbeamMaterial.opacity > 0.01) {
+      const pos = sunbeamGeo.attributes.position.array;
+      const phase = sunbeamGeo.attributes.phase.array;
+      const speed = sunbeamGeo.attributes.speed.array;
+      for (let i = 0; i < pos.length / 3; i++) {
+        phase[i] += 0.02;
+        pos[i * 3 + 1] += speed[i];
+        pos[i * 3] += Math.sin(phase[i]) * 0.15;
+        pos[i * 3 + 2] += Math.cos(phase[i]) * 0.1;
+        if (pos[i * 3 + 1] > 100) {
+          pos[i * 3 + 1] = -100;
+          pos[i * 3] = (Math.random() - 0.5) * 320;
+        }
+      }
+      sunbeamGeo.attributes.position.needsUpdate = true;
+    }
+
+    // 5. Heat Shimmer Mirage Physics
     if (heatMaterial.opacity > 0.01) {
       const pos = heatGeo.attributes.position.array;
       const ph = heatGeo.attributes.phase.array;
@@ -644,7 +722,7 @@ const ThreeWeatherFX = (function() {
       heatGeo.attributes.position.needsUpdate = true;
     }
 
-    // 5. Freezing Frost & Ice Crystal Twinkle
+    // 6. Freezing Frost & Ice Crystal Twinkle
     if (frostMaterial.opacity > 0.01) {
       const pos = frostGeo.attributes.position.array;
       const tw = frostGeo.attributes.twinkle.array;
@@ -660,7 +738,7 @@ const ThreeWeatherFX = (function() {
       frostGeo.attributes.position.needsUpdate = true;
     }
 
-    // 6. Fog & Mist Drift Physics
+    // 7. Fog & Mist Drift Physics
     if (fogMaterial.opacity > 0.01) {
       const pos = fogGeo.attributes.position.array;
       const spd = fogGeo.attributes.speed.array;
