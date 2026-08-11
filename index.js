@@ -478,8 +478,8 @@ const ThreeGlobe = (function() {
       const dist = Math.sqrt(dx * dx + dy * dy);
       const elapsed = performance.now() - pointerDownTime;
 
-      // If user dragged more than 6px or held for > 350ms, it was an orbital drag, not a click
-      if (dist > 6 || elapsed > 350) return;
+      // Allow natural single-click tolerance (dist <= 14px and elapsed <= 550ms)
+      if (dist > 14 || elapsed > 550) return;
 
       onGlobeSelect(e);
     });
@@ -731,7 +731,7 @@ const ThreeGlobe = (function() {
     mouse.y = -((event.clientY - rect.top) / rect.height) * 2 + 1;
 
     raycaster.setFromCamera(mouse, camera);
-    const intersects = raycaster.intersectObject(earthMesh);
+    const intersects = raycaster.intersectObjects([earthMesh, atmosphereMesh, cloudMesh].filter(Boolean));
 
     if (intersects.length > 0) {
       const point = intersects[0].point;
@@ -1775,21 +1775,16 @@ function setupEventListeners() {
     });
   });
 
-  // 10. City Chips Click Handlers
-  document.querySelectorAll(".city-chip").forEach((chip) => {
-    chip.addEventListener("click", () => {
-      const lat = parseFloat(chip.dataset.lat);
-      const lng = parseFloat(chip.dataset.lng);
-      const name = chip.dataset.name;
-      const country = chip.dataset.country;
-      const code = chip.dataset.code || "";
+  // 10. Dashboard Tab Switching
+  document.querySelectorAll(".dash-tab-btn").forEach((btn) => {
+    btn.addEventListener("click", () => {
+      const tabId = btn.dataset.tab;
+      document.querySelectorAll(".dash-tab-btn").forEach(b => b.classList.remove("active"));
+      document.querySelectorAll(".tab-pane").forEach(p => p.classList.remove("active"));
 
-      fetchLocationAndWeather(lat, lng, {
-        city: name,
-        country: country,
-        countryCode: code,
-        zoom: 7
-      });
+      btn.classList.add("active");
+      const targetPane = document.getElementById(`tab-${tabId}`);
+      if (targetPane) targetPane.classList.add("active");
     });
   });
 

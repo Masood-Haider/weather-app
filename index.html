@@ -2,78 +2,77 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <title>Weather App</title>
-  <meta name="description" content="Explore real-time weather forecasts, realistic 3D Earth Globe, and worldwide meteorological data.">
+  
+  <!-- Primary Meta Tags -->
+  <meta name="title" content="Weather App">
+  <meta name="description" content="Clean minimalist weather application with interactive 3D Earth Globe, real-time meteorological telemetry, and accurate forecasts.">
+  <meta name="theme-color" content="#000000">
 
-  <!-- Google Fonts -->
+  <!-- Google Fonts: Inter & Outfit -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Outfit:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@400;600;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Outfit:wght@400;600;700;800;900&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
 
   <!-- Leaflet CSS -->
-  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin=""/>
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="" />
 
   <!-- Locomotive Scroll CSS -->
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/locomotive-scroll@4.1.4/dist/locomotive-scroll.min.css">
 
-  <!-- App Stylesheet -->
+  <!-- Application Stylesheet -->
   <link rel="stylesheet" href="./style.css">
 </head>
 <body class="view-2d-mode">
 
-  <!-- Full-Screen 3D Atmospheric Weather FX Canvas -->
-  <canvas id="weather-fx-canvas" aria-hidden="true"></canvas>
+  <!-- Main Viewport Container -->
+  <div id="app-root" class="app-root">
 
-  <!-- Full-Screen Interactive 2D World Map -->
-  <div id="map" aria-label="Interactive World Map"></div>
+    <!-- 2D Leaflet Interactive Map View -->
+    <div id="map" class="map-viewport" aria-label="Interactive Weather Map"></div>
 
-  <!-- Full-Screen Interactive Realistic 3D Earth Globe Container -->
-  <div id="globe-container" aria-label="Interactive 3D Earth Globe">
-    <canvas id="globe-canvas"></canvas>
-    
-    <!-- 3D Globe HUD Quick Controls -->
-    <div class="globe-hud interactive">
-      <div class="globe-hud-pill">
-        <span class="hud-status-dot"></span>
-        <span id="globe-coords-hud">--° N, --° E</span>
-      </div>
-      <div class="globe-hud-actions">
-        <button id="globe-autorotate-btn" class="globe-ctrl-btn active" title="Toggle Auto Rotation">
-          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
-            <path d="M21.5 2v6h-6M21.34 15.57a10 10 0 1 1-.57-8.38l5.67-5.67"/>
-          </svg>
-          <span>Auto-Spin</span>
-        </button>
-        <button id="globe-reset-btn" class="globe-ctrl-btn" title="Center on Selected City">
-          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
-            <circle cx="12" cy="12" r="10"></circle>
-            <polygon points="16.24 7.76 14.12 14.12 7.76 16.24 9.88 9.88 16.24 7.76"></polygon>
-          </svg>
-          <span>Focus City</span>
-        </button>
+    <!-- 3D Three.js Interactive Earth Globe View -->
+    <div id="globe-container" class="globe-viewport" aria-label="3D Earth Globe">
+      <canvas id="globe-canvas"></canvas>
+      
+      <!-- 3D Globe HUD Overlay -->
+      <div class="globe-hud interactive">
+        <div class="globe-hud-pill">
+          <span class="hud-status-dot"></span>
+          <span id="globe-coords-hud">0.00° N, 0.00° E</span>
+        </div>
+        <div class="globe-hud-actions">
+          <button id="globe-autorotate-btn" class="globe-ctrl-btn active" title="Toggle Auto Rotation">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M21.5 2v6h-6M2.5 22v-6h6M2 11.5a10 10 0 0 1 18.8-4.3M22 12.5a10 10 0 0 1-18.8 4.2"/>
+            </svg>
+            <span>Auto-Spin</span>
+          </button>
+          <button id="globe-reset-btn" class="globe-ctrl-btn" title="Focus Camera on Current City">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+              <circle cx="12" cy="12" r="10"></circle>
+              <line x1="22" y1="12" x2="18" y2="12"></line>
+              <line x1="6" y1="12" x2="2" y2="12"></line>
+              <line x1="12" y1="6" x2="12" y2="2"></line>
+              <line x1="12" y1="22" x2="12" y2="18"></line>
+            </svg>
+            <span>Focus City</span>
+          </button>
+        </div>
       </div>
     </div>
-  </div>
 
-  <!-- UI Overlay Layer -->
-  <div class="app-overlay">
-    
-    <!-- Top Navigation Bar -->
+    <!-- Three.js Weather Atmospheric FX Canvas -->
+    <canvas id="weather-fx-canvas" class="weather-fx-canvas"></canvas>
+
+    <!-- Top Navigation & Control Header -->
     <header class="top-nav interactive">
-      <!-- Brand Logo -->
-      <div class="brand-badge" id="brand-home-btn" title="Reset View to World Overview">
+      <!-- Brand & Home Reset -->
+      <div class="brand-group" id="brand-home-btn" title="Weather App">
         <div class="brand-icon">
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-            <circle cx="12" cy="12" r="4"></circle>
-            <path d="M12 2v2"></path>
-            <path d="M12 20v2"></path>
-            <path d="m4.93 4.93 1.41 1.41"></path>
-            <path d="m17.66 17.66 1.41 1.41"></path>
-            <path d="M2 12h2"></path>
-            <path d="M20 12h2"></path>
-            <path d="m6.34 17.66-1.41 1.41"></path>
-            <path d="m19.07 4.93-1.41 1.41"></path>
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M17.5 19H9a7 7 0 1 1 6.71-9h1.79a4.5 4.5 0 1 1 0 9Z"></path>
           </svg>
         </div>
         <div class="brand-text">
@@ -81,30 +80,31 @@
         </div>
       </div>
 
-      <!-- Live Search Box with Autocomplete (Monochrome Black & White) -->
+      <!-- Search Input Container with Autocomplete -->
       <div class="search-wrapper">
         <div class="search-box">
           <span class="search-icon">
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
               <circle cx="11" cy="11" r="8"></circle>
-              <path d="m21 21-4.3-4.3"></path>
+              <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
             </svg>
           </span>
           <input 
             type="text" 
             id="search-input" 
             class="search-input" 
-            placeholder="Search any country, city, or coordinates..." 
-            autocomplete="off"
+            placeholder="Search city, postal code or coordinates..." 
+            autocomplete="off" 
             spellcheck="false"
+            aria-label="Search city or coordinates"
           >
-          <button id="search-clear-btn" class="search-clear-btn" title="Clear search" aria-label="Clear">
+          <button id="search-clear-btn" class="search-clear-btn" title="Clear search" aria-label="Clear Search">
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
               <line x1="18" y1="6" x2="6" y2="18"></line>
               <line x1="6" y1="6" x2="18" y2="18"></line>
             </svg>
           </button>
-          <span class="search-shortcut" title="Press / to focus search">/</span>
+          <div class="search-shortcut" title="Press '/' to search">/</div>
         </div>
 
         <!-- Autocomplete Suggestions List -->
@@ -176,48 +176,11 @@
       </button>
     </div>
 
-    <!-- Quick City Preset Chips -->
-    <div class="quick-chips-bar interactive">
-      <button class="city-chip" data-lat="40.7128" data-lng="-74.0060" data-name="New York" data-country="United States" data-code="US">
-        <span>🇺🇸</span> New York
-      </button>
-      <button class="city-chip" data-lat="51.5074" data-lng="-0.1278" data-name="London" data-country="United Kingdom" data-code="GB">
-        <span>🇬🇧</span> London
-      </button>
-      <button class="city-chip" data-lat="48.8566" data-lng="2.3522" data-name="Paris" data-country="France" data-code="FR">
-        <span>🇫🇷</span> Paris
-      </button>
-      <button class="city-chip" data-lat="35.6762" data-lng="139.6503" data-name="Tokyo" data-country="Japan" data-code="JP">
-        <span>🇯🇵</span> Tokyo
-      </button>
-      <button class="city-chip" data-lat="25.2048" data-lng="55.2708" data-name="Dubai" data-country="United Arab Emirates" data-code="AE">
-        <span>🇦🇪</span> Dubai
-      </button>
-      <button class="city-chip" data-lat="-33.8688" data-lng="151.2093" data-name="Sydney" data-country="Australia" data-code="AU">
-        <span>🇦🇺</span> Sydney
-      </button>
-      <button class="city-chip" data-lat="30.0444" data-lng="31.2357" data-name="Cairo" data-country="Egypt" data-code="EG">
-        <span>🇪🇬</span> Cairo
-      </button>
-      <button class="city-chip" data-lat="-22.9068" data-lng="-43.1729" data-name="Rio de Janeiro" data-country="Brazil" data-code="BR">
-        <span>🇧🇷</span> Rio
-      </button>
-      <button class="city-chip" data-lat="47.3769" data-lng="8.5417" data-name="Zurich" data-country="Switzerland" data-code="CH">
-        <span>🇨🇭</span> Zurich
-      </button>
-      <button class="city-chip" data-lat="28.6139" data-lng="77.2090" data-name="New Delhi" data-country="India" data-code="IN">
-        <span>🇮🇳</span> New Delhi
-      </button>
-      <button class="city-chip" data-lat="64.1466" data-lng="-21.9426" data-name="Reykjavik" data-country="Iceland" data-code="IS">
-        <span>🇮🇸</span> Reykjavik
-      </button>
-    </div>
-
-    <!-- Weather Dashboard (Monochrome Black & White) -->
+    <!-- Weather Dashboard (Compact, Segmented & Divided) -->
     <aside id="main-dashboard" class="main-dashboard interactive" aria-label="Weather Details Dashboard">
       <div class="weather-card">
 
-        <!-- Header: Location & Live Clock -->
+        <!-- Header: Location, Clock & Minimize -->
         <div class="weather-card-header">
           <div class="location-meta">
             <div class="location-place">
@@ -251,230 +214,200 @@
           </div>
         </div>
 
-        <!-- Scrollable Dashboard Body (Locomotive Scroll Container) -->
-        <div id="weather-card-scroll-body" class="weather-card-body" data-scroll-container>
+        <!-- Divided Info Tabs Navigation -->
+        <div class="dashboard-tabs">
+          <button class="dash-tab-btn active" data-tab="overview">Overview</button>
+          <button class="dash-tab-btn" data-tab="hourly">Hourly</button>
+          <button class="dash-tab-btn" data-tab="daily">7-Day</button>
+          <button class="dash-tab-btn" data-tab="details">Details</button>
+        </div>
+
+        <!-- Dashboard Content Body -->
+        <div id="weather-card-scroll-body" class="weather-card-body">
           
-          <!-- Hero Section: Temperature & Atmosphere (Clean Black & White) -->
-          <section class="weather-hero" data-scroll data-scroll-speed="0.6">
-            <div class="temp-primary-box">
-              <div class="temp-main">
-                <span id="temp-value">--</span>
-                <span id="temp-unit-symbol" class="temp-unit-symbol">°C</span>
-              </div>
-              <div class="temp-meta-badges">
-                <span class="temp-apparent" id="temp-feels-like">Feels like --°C</span>
-                <div class="temp-high-low-badge">
-                  <span class="high">▲ <span id="temp-high-val">--°</span></span>
-                  <span class="low">▼ <span id="temp-low-val">--°</span></span>
+          <!-- TAB 1: OVERVIEW -->
+          <div id="tab-overview" class="tab-pane active">
+            <!-- Hero Temperature -->
+            <section class="weather-hero">
+              <div class="temp-primary-box">
+                <div class="temp-main">
+                  <span id="temp-value">--</span>
+                  <span id="temp-unit-symbol" class="temp-unit-symbol">°C</span>
+                </div>
+                <div class="temp-meta-badges">
+                  <span class="temp-apparent" id="temp-feels-like">Feels like --°C</span>
+                  <div class="temp-high-low-badge">
+                    <span class="high">▲ <span id="temp-high-val">--°</span></span>
+                    <span class="low">▼ <span id="temp-low-val">--°</span></span>
+                  </div>
                 </div>
               </div>
-            </div>
 
-            <div class="weather-hero-right">
-              <div id="weather-hero-icon" class="weather-hero-icon-container">
-                <!-- SVG Icon Injected via JS -->
-              </div>
-              <div id="weather-condition-text" class="weather-condition-title">
-                Loading...
-              </div>
-              <div id="weather-status-tag" class="weather-status-tag">
-                Real-Time Telemetry
-              </div>
-            </div>
-          </section>
-
-          <!-- Telemetry Gauges Row -->
-          <div class="telemetry-grid" data-scroll data-scroll-speed="0.8">
-            
-            <!-- Humidity Gauge -->
-            <div class="telemetry-card" title="Relative Humidity">
-              <div class="telemetry-head">
-                <span class="telemetry-icon">💧</span>
-                <span class="telemetry-title">Humidity</span>
-              </div>
-              <div id="metric-humidity" class="telemetry-val">--%</div>
-              <div class="telemetry-bar-wrap">
-                <div id="humidity-bar-fill" class="telemetry-bar-fill humidity-fill" style="width: 50%;"></div>
-              </div>
-              <span id="humidity-status" class="telemetry-sub">Optimal Comfort</span>
-            </div>
-
-            <!-- Wind Gauge with Compass Gyroscope -->
-            <div class="telemetry-card wind-telemetry-card" title="Wind Velocity & Vector">
-              <div class="telemetry-head">
-                <span class="telemetry-icon">💨</span>
-                <span class="telemetry-title">Wind Vector</span>
-              </div>
-              <div class="wind-telemetry-content">
-                <div class="wind-data-left">
-                  <div id="metric-wind" class="telemetry-val">-- km/h</div>
-                  <span id="wind-direction-sub" class="telemetry-sub">-- Direction</span>
+              <div class="weather-hero-right">
+                <div id="weather-hero-icon" class="weather-hero-icon-container">
+                  <!-- SVG Icon Injected via JS -->
                 </div>
-                <div class="wind-compass-3d-wrapper">
-                  <canvas id="wind-3d-compass-canvas" width="52" height="52"></canvas>
+                <div id="weather-condition-text" class="weather-condition-title">
+                  Loading...
+                </div>
+                <div id="weather-status-tag" class="weather-status-tag">
+                  Real-Time Telemetry
                 </div>
               </div>
-              <div class="telemetry-bar-wrap">
-                <div id="wind-bar-fill" class="telemetry-bar-fill wind-fill" style="width: 30%;"></div>
+            </section>
+
+            <!-- 2x2 Compact Telemetry Gauges -->
+            <div class="telemetry-grid">
+              <!-- Humidity -->
+              <div class="telemetry-card" title="Relative Humidity">
+                <div class="telemetry-head">
+                  <span class="telemetry-icon">💧</span>
+                  <span class="telemetry-title">Humidity</span>
+                </div>
+                <div id="metric-humidity" class="telemetry-val">--%</div>
+                <div class="telemetry-bar-wrap">
+                  <div id="humidity-bar-fill" class="telemetry-bar-fill humidity-fill" style="width: 50%;"></div>
+                </div>
+                <span id="humidity-status" class="telemetry-sub">Comfort</span>
+              </div>
+
+              <!-- Wind Vector with 3D Compass -->
+              <div class="telemetry-card wind-telemetry-card" title="Wind Velocity & Vector">
+                <div class="telemetry-head">
+                  <span class="telemetry-icon">💨</span>
+                  <span class="telemetry-title">Wind</span>
+                </div>
+                <div class="wind-telemetry-content">
+                  <div class="wind-data-left">
+                    <div id="metric-wind" class="telemetry-val">-- km/h</div>
+                    <span id="wind-direction-sub" class="telemetry-sub">--</span>
+                  </div>
+                  <div class="wind-compass-3d-wrapper">
+                    <canvas id="wind-3d-compass-canvas" width="44" height="44"></canvas>
+                  </div>
+                </div>
+                <div class="telemetry-bar-wrap">
+                  <div id="wind-bar-fill" class="telemetry-bar-fill wind-fill" style="width: 30%;"></div>
+                </div>
+              </div>
+
+              <!-- UV Index -->
+              <div class="telemetry-card" title="UV Radiation Level">
+                <div class="telemetry-head">
+                  <span class="telemetry-icon">☀️</span>
+                  <span class="telemetry-title">UV Index</span>
+                </div>
+                <div id="metric-uv" class="telemetry-val">--</div>
+                <div class="telemetry-bar-wrap">
+                  <div id="uv-bar-fill" class="telemetry-bar-fill uv-fill" style="width: 25%;"></div>
+                </div>
+                <span id="uv-status" class="telemetry-sub">Low Risk</span>
+              </div>
+
+              <!-- Precipitation -->
+              <div class="telemetry-card" title="Precipitation Probability">
+                <div class="telemetry-head">
+                  <span class="telemetry-icon">🌧️</span>
+                  <span class="telemetry-title">Precipitation</span>
+                </div>
+                <div id="metric-precip" class="telemetry-val">--%</div>
+                <div class="telemetry-bar-wrap">
+                  <div id="precip-bar-fill" class="telemetry-bar-fill precip-fill" style="width: 10%;"></div>
+                </div>
+                <span id="precip-status" class="telemetry-sub">Dry</span>
               </div>
             </div>
 
-            <!-- UV Index Gauge -->
-            <div class="telemetry-card" title="UV Radiation Level">
-              <div class="telemetry-head">
-                <span class="telemetry-icon">☀️</span>
-                <span class="telemetry-title">UV Index</span>
+            <!-- Solar Cycle Arc -->
+            <section class="section-block solar-section-block" id="solar-section">
+              <div class="section-header">
+                <span class="section-title">
+                  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                    <circle cx="12" cy="12" r="5"></circle>
+                    <line x1="12" y1="1" x2="12" y2="3"></line>
+                    <line x1="12" y1="21" x2="12" y2="23"></line>
+                    <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line>
+                    <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line>
+                  </svg>
+                  Solar Cycle
+                </span>
+                <span id="daylight-duration-badge" class="section-badge">-- hrs</span>
               </div>
-              <div id="metric-uv" class="telemetry-val">--</div>
-              <div class="telemetry-bar-wrap">
-                <div id="uv-bar-fill" class="telemetry-bar-fill uv-fill" style="width: 25%;"></div>
-              </div>
-              <span id="uv-status" class="telemetry-sub">Low Risk</span>
-            </div>
+              
+              <div class="sun-cycle-box">
+                <div class="sun-item">
+                  <div class="sun-info">
+                    <span class="sun-label">Sunrise</span>
+                    <span id="sun-sunrise-time" class="sun-time">--:--</span>
+                  </div>
+                </div>
 
-            <!-- Precipitation Gauge -->
-            <div class="telemetry-card" title="Precipitation Probability">
-              <div class="telemetry-head">
-                <span class="telemetry-icon">🌧️</span>
-                <span class="telemetry-title">Precip</span>
-              </div>
-              <div id="metric-precip" class="telemetry-val">--%</div>
-              <div class="telemetry-bar-wrap">
-                <div id="precip-bar-fill" class="telemetry-bar-fill precip-fill" style="width: 10%;"></div>
-              </div>
-              <span id="precip-status" class="telemetry-sub">Dry Conditions</span>
-            </div>
+                <div class="solar-arc-track">
+                  <canvas id="solar-3d-canvas" class="solar-3d-canvas" width="180" height="56"></canvas>
+                  <div class="solar-arc-line"></div>
+                </div>
 
+                <div class="sun-item">
+                  <div class="sun-info">
+                    <span class="sun-label">Sunset</span>
+                    <span id="sun-sunset-time" class="sun-time">--:--</span>
+                  </div>
+                </div>
+              </div>
+            </section>
           </div>
 
-          <!-- 24-Hour Hourly Timeline Graph & Cards -->
-          <section class="section-block" data-scroll data-scroll-speed="0.9">
-            <div class="section-header">
-              <span class="section-title">
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-                  <circle cx="12" cy="12" r="10"></circle>
-                  <polyline points="12 6 12 12 16 14"></polyline>
-                </svg>
-                Hourly Breakdown (24h)
-              </span>
-              <span class="section-badge">Forecast</span>
+          <!-- TAB 2: HOURLY FORECAST -->
+          <div id="tab-hourly" class="tab-pane">
+            <div class="tab-pane-header">
+              <span class="tab-pane-title">24-Hour Timeline</span>
             </div>
             <div id="hourly-forecast-container" class="hourly-scroll-container">
               <!-- Hourly Cards Injected Dynamically -->
             </div>
-          </section>
+          </div>
 
-          <!-- 7-Day Extended Forecast -->
-          <section class="section-block" data-scroll data-scroll-speed="1.0">
-            <div class="section-header">
-              <span class="section-title">
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-                  <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
-                  <line x1="16" y1="2" x2="16" y2="6"></line>
-                  <line x1="8" y1="2" x2="8" y2="6"></line>
-                  <line x1="3" y1="10" x2="21" y2="10"></line>
-                </svg>
-                7-Day Outlook
-              </span>
-              <span class="section-badge">Range</span>
+          <!-- TAB 3: 7-DAY OUTLOOK -->
+          <div id="tab-daily" class="tab-pane">
+            <div class="tab-pane-header">
+              <span class="tab-pane-title">7-Day Extended Forecast</span>
             </div>
             <div id="daily-forecast-container" class="daily-forecast-list">
               <!-- Daily Forecast Rows Injected -->
             </div>
-          </section>
+          </div>
 
-          <!-- Sun & Daylight Solar Arc -->
-          <section class="section-block solar-section-block" data-scroll data-scroll-speed="1.1" id="solar-section">
-            <div class="section-header">
-              <span class="section-title">
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-                  <path d="M12 2v2"></path>
-                  <path d="M12 20v2"></path>
-                  <path d="m4.93 4.93 1.41 1.41"></path>
-                  <path d="m17.66 17.66 1.41 1.41"></path>
-                  <path d="M2 12h2"></path>
-                  <path d="M20 12h2"></path>
-                  <path d="m6.34 17.66-1.41 1.41"></path>
-                  <path d="m19.07 4.93-1.41 1.41"></path>
-                </svg>
-                Solar Cycle & Daylight Arc
-              </span>
-              <span id="daylight-duration-badge" class="section-badge">-- hrs daylight</span>
-            </div>
-            
-            <div class="sun-cycle-box">
-              <div class="sun-item">
-                <div class="sun-icon-box dawn">🌅</div>
-                <div class="sun-info">
-                  <span class="sun-label">Sunrise</span>
-                  <span id="sun-sunrise-time" class="sun-time">--:--</span>
-                </div>
-              </div>
-
-              <!-- Celestial Solar Arc Visualizer -->
-              <div class="solar-arc-track">
-                <canvas id="solar-3d-canvas" class="solar-3d-canvas" width="220" height="74"></canvas>
-                <div class="solar-arc-line"></div>
-                <div id="solar-sun-dot" class="solar-sun-dot"></div>
-              </div>
-
-              <div class="sun-item">
-                <div class="sun-icon-box dusk">🌇</div>
-                <div class="sun-info">
-                  <span class="sun-label">Sunset</span>
-                  <span id="sun-sunset-time" class="sun-time">--:--</span>
-                </div>
-              </div>
-            </div>
-          </section>
-
-          <!-- Extended Telemetry & Atmospheric Details -->
-          <section class="section-block" data-scroll data-scroll-speed="1.2">
-            <div class="section-header">
-              <span class="section-title">
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-                  <path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"></path>
-                </svg>
-                Atmospheric Telemetry
-              </span>
-              <span class="section-badge">Barometric</span>
+          <!-- TAB 4: ATMOSPHERIC DETAILS -->
+          <div id="tab-details" class="tab-pane">
+            <div class="tab-pane-header">
+              <span class="tab-pane-title">Atmospheric & Barometric Telemetry</span>
             </div>
             <div class="details-grid">
-              
               <div class="detail-card">
-                <div class="detail-card-head">
-                  <span>🧭</span> Wind & Gusts
-                </div>
+                <div class="detail-card-head"><span>🧭</span> Wind & Gusts</div>
                 <div id="detail-wind-full" class="detail-card-val">--</div>
                 <div id="detail-wind-gusts" class="detail-card-sub">Peak Gusts: --</div>
               </div>
 
               <div class="detail-card">
-                <div class="detail-card-head">
-                  <span>⏱️</span> Surface Pressure
-                </div>
+                <div class="detail-card-head"><span>⏱️</span> Surface Pressure</div>
                 <div id="detail-pressure" class="detail-card-val">-- hPa</div>
                 <div id="detail-pressure-status" class="detail-card-sub">Standard Pressure</div>
               </div>
 
               <div class="detail-card">
-                <div class="detail-card-head">
-                  <span>☁️</span> Cloud Cover
-                </div>
+                <div class="detail-card-head"><span>☁️</span> Cloud Cover</div>
                 <div id="detail-clouds" class="detail-card-val">--%</div>
                 <div id="detail-clouds-status" class="detail-card-sub">Sky Condition</div>
               </div>
 
               <div class="detail-card">
-                <div class="detail-card-head">
-                  <span>📍</span> Coordinates
-                </div>
+                <div class="detail-card-head"><span>📍</span> Coordinates</div>
                 <div id="detail-coords" class="detail-card-val coords-val">--</div>
                 <div id="detail-elevation" class="detail-card-sub">Elevation: -- m</div>
               </div>
-
             </div>
-          </section>
+          </div>
 
         </div>
       </div>
@@ -497,9 +430,6 @@
   <!-- Three.js 3D Engine & OrbitControls -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
-
-  <!-- Locomotive Scroll Library -->
-  <script src="https://cdn.jsdelivr.net/npm/locomotive-scroll@4.1.4/dist/locomotive-scroll.min.js"></script>
 
   <!-- Application Logic -->
   <script src="./index.js"></script>
