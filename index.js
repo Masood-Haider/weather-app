@@ -205,8 +205,21 @@ const ThreeWeatherFX = (function() {
   let scene, camera, renderer;
   let rainGeo, rainPoints, rainMaterial;
   let snowGeo, snowPoints, snowMaterial;
+  let blizzardGeo, blizzardPoints, blizzardMaterial;
+  let heatGeo, heatPoints, heatMaterial;
+  let frostGeo, frostPoints, frostMaterial;
+  let fogGeo, fogPoints, fogMaterial;
   let lightningLight, lightningTimer = 0;
-  let activeMode = "clear";
+
+  // Active state booleans
+  let isRain = false;
+  let isSnow = false;
+  let isBlizzard = false;
+  let isStorm = false;
+  let isHeat = false;
+  let isFrost = false;
+  let isFog = false;
+
   let windTilt = 0;
   let windSpeedScalar = 1;
   let isInitialized = false;
@@ -223,20 +236,25 @@ const ThreeWeatherFX = (function() {
     renderer.setSize(window.innerWidth, window.innerHeight);
     renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
 
-    // Lightning Flash Light
+    // Lightning Flash Point Light
     lightningLight = new THREE.PointLight(0xffffff, 0, 800);
     lightningLight.position.set(0, 100, 50);
     scene.add(lightningLight);
 
-    // Setup Weather Particle Systems
+    // Setup Atmospheric Particle Systems
     createRainSystem();
     createSnowSystem();
+    createBlizzardSystem();
+    createHeatWaveSystem();
+    createFrostSystem();
+    createFogSystem();
 
     window.addEventListener("resize", onResize);
     isInitialized = true;
     animate();
   }
 
+  // 1. RAIN SYSTEM
   function createRainSystem() {
     const count = 2200;
     rainGeo = new THREE.BufferGeometry();
@@ -244,23 +262,22 @@ const ThreeWeatherFX = (function() {
     const velocities = new Float32Array(count);
 
     for (let i = 0; i < count; i++) {
-      positions[i * 3] = (Math.random() - 0.5) * 300;
+      positions[i * 3] = (Math.random() - 0.5) * 320;
       positions[i * 3 + 1] = Math.random() * 200 - 100;
       positions[i * 3 + 2] = (Math.random() - 0.5) * 150;
-      velocities[i] = 2.5 + Math.random() * 3.5;
+      velocities[i] = 2.8 + Math.random() * 3.5;
     }
 
     rainGeo.setAttribute("position", new THREE.BufferAttribute(positions, 3));
     rainGeo.setAttribute("velocity", new THREE.BufferAttribute(velocities, 1));
 
-    // Rain drop texture
     const canvas = document.createElement("canvas");
     canvas.width = 16;
     canvas.height = 32;
     const ctx = canvas.getContext("2d");
     const grad = ctx.createLinearGradient(8, 0, 8, 32);
     grad.addColorStop(0, "rgba(255, 255, 255, 0)");
-    grad.addColorStop(1, "rgba(255, 255, 255, 0.85)");
+    grad.addColorStop(1, "rgba(255, 255, 255, 0.9)");
     ctx.fillStyle = grad;
     ctx.fillRect(6, 0, 4, 32);
     const rainTex = new THREE.CanvasTexture(canvas);
@@ -278,14 +295,15 @@ const ThreeWeatherFX = (function() {
     scene.add(rainPoints);
   }
 
+  // 2. SOFT SNOW SYSTEM
   function createSnowSystem() {
-    const count = 1400;
+    const count = 1200;
     snowGeo = new THREE.BufferGeometry();
     const positions = new Float32Array(count * 3);
     const wander = new Float32Array(count);
 
     for (let i = 0; i < count; i++) {
-      positions[i * 3] = (Math.random() - 0.5) * 300;
+      positions[i * 3] = (Math.random() - 0.5) * 320;
       positions[i * 3 + 1] = Math.random() * 200 - 100;
       positions[i * 3 + 2] = (Math.random() - 0.5) * 150;
       wander[i] = Math.random() * Math.PI * 2;
@@ -294,7 +312,6 @@ const ThreeWeatherFX = (function() {
     snowGeo.setAttribute("position", new THREE.BufferAttribute(positions, 3));
     snowGeo.setAttribute("wander", new THREE.BufferAttribute(wander, 1));
 
-    // Snowflake texture
     const canvas = document.createElement("canvas");
     canvas.width = 32;
     canvas.height = 32;
@@ -322,11 +339,219 @@ const ThreeWeatherFX = (function() {
     scene.add(snowPoints);
   }
 
-  function updateWeather(code, isDay, windSpeed, windDeg, cloudCover) {
+  // 3. BLIZZARD & GALE VORTEX SYSTEM
+  function createBlizzardSystem() {
+    const count = 1800;
+    blizzardGeo = new THREE.BufferGeometry();
+    const positions = new Float32Array(count * 3);
+    const speeds = new Float32Array(count);
+
+    for (let i = 0; i < count; i++) {
+      positions[i * 3] = (Math.random() - 0.5) * 350;
+      positions[i * 3 + 1] = (Math.random() - 0.5) * 220;
+      positions[i * 3 + 2] = (Math.random() - 0.5) * 160;
+      speeds[i] = 4.0 + Math.random() * 5.0;
+    }
+
+    blizzardGeo.setAttribute("position", new THREE.BufferAttribute(positions, 3));
+    blizzardGeo.setAttribute("speed", new THREE.BufferAttribute(speeds, 1));
+
+    const canvas = document.createElement("canvas");
+    canvas.width = 32;
+    canvas.height = 16;
+    const ctx = canvas.getContext("2d");
+    const grad = ctx.createLinearGradient(0, 8, 32, 8);
+    grad.addColorStop(0, "rgba(255, 255, 255, 0)");
+    grad.addColorStop(0.5, "rgba(255, 255, 255, 0.95)");
+    grad.addColorStop(1, "rgba(255, 255, 255, 0)");
+    ctx.fillStyle = grad;
+    ctx.fillRect(0, 5, 32, 6);
+    const blizTex = new THREE.CanvasTexture(canvas);
+
+    blizzardMaterial = new THREE.PointsMaterial({
+      size: 5.0,
+      map: blizTex,
+      transparent: true,
+      opacity: 0,
+      blending: THREE.AdditiveBlending,
+      depthWrite: false
+    });
+
+    blizzardPoints = new THREE.Points(blizzardGeo, blizzardMaterial);
+    scene.add(blizzardPoints);
+  }
+
+  // 4. THERMAL HEAT SHIMMER & MIRAGE WAVES
+  function createHeatWaveSystem() {
+    const count = 380;
+    heatGeo = new THREE.BufferGeometry();
+    const positions = new Float32Array(count * 3);
+    const phase = new Float32Array(count);
+
+    for (let i = 0; i < count; i++) {
+      positions[i * 3] = (Math.random() - 0.5) * 320;
+      positions[i * 3 + 1] = -90 + Math.random() * 80;
+      positions[i * 3 + 2] = (Math.random() - 0.5) * 120;
+      phase[i] = Math.random() * Math.PI * 2;
+    }
+
+    heatGeo.setAttribute("position", new THREE.BufferAttribute(positions, 3));
+    heatGeo.setAttribute("phase", new THREE.BufferAttribute(phase, 1));
+
+    const canvas = document.createElement("canvas");
+    canvas.width = 32;
+    canvas.height = 32;
+    const ctx = canvas.getContext("2d");
+    const rad = ctx.createRadialGradient(16, 16, 0, 16, 16, 16);
+    rad.addColorStop(0, "rgba(255, 255, 255, 0.8)");
+    rad.addColorStop(0.4, "rgba(255, 255, 255, 0.25)");
+    rad.addColorStop(1, "rgba(255, 255, 255, 0)");
+    ctx.fillStyle = rad;
+    ctx.beginPath();
+    ctx.arc(16, 16, 16, 0, Math.PI * 2);
+    ctx.fill();
+    const heatTex = new THREE.CanvasTexture(canvas);
+
+    heatMaterial = new THREE.PointsMaterial({
+      size: 6.0,
+      map: heatTex,
+      transparent: true,
+      opacity: 0,
+      blending: THREE.AdditiveBlending,
+      depthWrite: false
+    });
+
+    heatPoints = new THREE.Points(heatGeo, heatMaterial);
+    scene.add(heatPoints);
+  }
+
+  // 5. FREEZING FROST & ICE CRYSTAL DUST
+  function createFrostSystem() {
+    const count = 500;
+    frostGeo = new THREE.BufferGeometry();
+    const positions = new Float32Array(count * 3);
+    const twinkle = new Float32Array(count);
+
+    for (let i = 0; i < count; i++) {
+      positions[i * 3] = (Math.random() - 0.5) * 320;
+      positions[i * 3 + 1] = (Math.random() - 0.5) * 200;
+      positions[i * 3 + 2] = (Math.random() - 0.5) * 140;
+      twinkle[i] = Math.random() * Math.PI * 2;
+    }
+
+    frostGeo.setAttribute("position", new THREE.BufferAttribute(positions, 3));
+    frostGeo.setAttribute("twinkle", new THREE.BufferAttribute(twinkle, 1));
+
+    const canvas = document.createElement("canvas");
+    canvas.width = 32;
+    canvas.height = 32;
+    const ctx = canvas.getContext("2d");
+    // Crisp 4-point diamond sparkle
+    ctx.fillStyle = "#ffffff";
+    ctx.beginPath();
+    ctx.moveTo(16, 2);
+    ctx.lineTo(19, 13);
+    ctx.lineTo(30, 16);
+    ctx.lineTo(19, 19);
+    ctx.lineTo(16, 30);
+    ctx.lineTo(13, 19);
+    ctx.lineTo(2, 16);
+    ctx.lineTo(13, 13);
+    ctx.closePath();
+    ctx.fill();
+    const frostTex = new THREE.CanvasTexture(canvas);
+
+    frostMaterial = new THREE.PointsMaterial({
+      size: 4.0,
+      map: frostTex,
+      transparent: true,
+      opacity: 0,
+      blending: THREE.AdditiveBlending,
+      depthWrite: false
+    });
+
+    frostPoints = new THREE.Points(frostGeo, frostMaterial);
+    scene.add(frostPoints);
+  }
+
+  // 6. FOG & MIST WISPS
+  function createFogSystem() {
+    const count = 260;
+    fogGeo = new THREE.BufferGeometry();
+    const positions = new Float32Array(count * 3);
+    const speeds = new Float32Array(count);
+
+    for (let i = 0; i < count; i++) {
+      positions[i * 3] = (Math.random() - 0.5) * 340;
+      positions[i * 3 + 1] = (Math.random() - 0.5) * 180;
+      positions[i * 3 + 2] = (Math.random() - 0.5) * 120;
+      speeds[i] = 0.15 + Math.random() * 0.25;
+    }
+
+    fogGeo.setAttribute("position", new THREE.BufferAttribute(positions, 3));
+    fogGeo.setAttribute("speed", new THREE.BufferAttribute(speeds, 1));
+
+    const canvas = document.createElement("canvas");
+    canvas.width = 64;
+    canvas.height = 64;
+    const ctx = canvas.getContext("2d");
+    const rad = ctx.createRadialGradient(32, 32, 0, 32, 32, 32);
+    rad.addColorStop(0, "rgba(255, 255, 255, 0.45)");
+    rad.addColorStop(0.6, "rgba(255, 255, 255, 0.15)");
+    rad.addColorStop(1, "rgba(255, 255, 255, 0)");
+    ctx.fillStyle = rad;
+    ctx.fillRect(0, 0, 64, 64);
+    const fogTex = new THREE.CanvasTexture(canvas);
+
+    fogMaterial = new THREE.PointsMaterial({
+      size: 22.0,
+      map: fogTex,
+      transparent: true,
+      opacity: 0,
+      blending: THREE.AdditiveBlending,
+      depthWrite: false
+    });
+
+    fogPoints = new THREE.Points(fogGeo, fogMaterial);
+    scene.add(fogPoints);
+  }
+
+  function updateWeather(code, isDay, windSpeed, windDeg, cloudCover, temperature) {
     if (!isInitialized) return;
 
     const info = WEATHER_CODES[code] || { category: "clear" };
-    activeMode = info.category;
+    const temp = (temperature !== undefined && temperature !== null) ? temperature : 20;
+
+    // Reset atmospheric mode triggers
+    isRain = false;
+    isSnow = false;
+    isBlizzard = false;
+    isStorm = false;
+    isHeat = false;
+    isFrost = false;
+    isFog = false;
+
+    if (info.category === "rain") {
+      isRain = true;
+    } else if (info.category === "thunderstorm") {
+      isRain = true;
+      isStorm = true;
+    } else if (info.category === "snow") {
+      if (code === 75 || code === 85 || code === 86 || (windSpeed || 0) > 22) {
+        isBlizzard = true;
+      } else {
+        isSnow = true;
+      }
+    } else if (info.category === "clouds" && (code === 45 || code === 48)) {
+      isFog = true;
+    }
+
+    // Graphical Thermal Cues (Heat Waves & Frost Crystals)
+    if (temp >= 29 && !isRain && !isSnow && !isBlizzard) {
+      isHeat = true;
+    } else if (temp <= 1 && !isRain && !isBlizzard) {
+      isFrost = true;
+    }
 
     // Wind tilt calculation
     const rad = ((windDeg || 0) * Math.PI) / 180;
@@ -337,50 +562,115 @@ const ThreeWeatherFX = (function() {
   function animate() {
     requestAnimationFrame(animate);
 
-    const targetRainOp = (activeMode === "rain" || activeMode === "thunderstorm") ? 0.75 : 0;
-    const targetSnowOp = (activeMode === "snow") ? 0.85 : 0;
+    // Target Opacity Interpolations
+    const targetRainOp = isRain ? (isStorm ? 0.9 : 0.75) : 0;
+    const targetSnowOp = isSnow ? 0.85 : 0;
+    const targetBlizzardOp = isBlizzard ? 0.95 : 0;
+    const targetHeatOp = isHeat ? 0.65 : 0;
+    const targetFrostOp = isFrost ? 0.85 : 0;
+    const targetFogOp = isFog ? 0.6 : 0;
 
-    // Smooth opacity lerping
     rainMaterial.opacity += (targetRainOp - rainMaterial.opacity) * 0.05;
     snowMaterial.opacity += (targetSnowOp - snowMaterial.opacity) * 0.05;
+    blizzardMaterial.opacity += (targetBlizzardOp - blizzardMaterial.opacity) * 0.05;
+    heatMaterial.opacity += (targetHeatOp - heatMaterial.opacity) * 0.05;
+    frostMaterial.opacity += (targetFrostOp - frostMaterial.opacity) * 0.05;
+    fogMaterial.opacity += (targetFogOp - fogMaterial.opacity) * 0.05;
 
-    // Rain Simulation
+    // 1. Rain Physics
     if (rainMaterial.opacity > 0.01) {
-      const positions = rainGeo.attributes.position.array;
-      const velocities = rainGeo.attributes.velocity.array;
-      for (let i = 0; i < positions.length / 3; i++) {
-        positions[i * 3 + 1] -= velocities[i] * windSpeedScalar;
-        positions[i * 3] += windTilt * 1.5;
-        if (positions[i * 3 + 1] < -100) {
-          positions[i * 3 + 1] = 100;
-          positions[i * 3] = (Math.random() - 0.5) * 300;
+      const pos = rainGeo.attributes.position.array;
+      const vel = rainGeo.attributes.velocity.array;
+      for (let i = 0; i < pos.length / 3; i++) {
+        pos[i * 3 + 1] -= vel[i] * windSpeedScalar;
+        pos[i * 3] += windTilt * 1.6;
+        if (pos[i * 3 + 1] < -100) {
+          pos[i * 3 + 1] = 100;
+          pos[i * 3] = (Math.random() - 0.5) * 320;
         }
       }
       rainGeo.attributes.position.needsUpdate = true;
     }
 
-    // Snow Simulation
+    // 2. Snow Physics
     if (snowMaterial.opacity > 0.01) {
-      const positions = snowGeo.attributes.position.array;
+      const pos = snowGeo.attributes.position.array;
       const wander = snowGeo.attributes.wander.array;
-      for (let i = 0; i < positions.length / 3; i++) {
+      for (let i = 0; i < pos.length / 3; i++) {
         wander[i] += 0.02;
-        positions[i * 3 + 1] -= 0.6 * windSpeedScalar;
-        positions[i * 3] += Math.sin(wander[i]) * 0.4 + windTilt * 0.5;
-        positions[i * 3 + 2] += Math.cos(wander[i]) * 0.3;
-        if (positions[i * 3 + 1] < -100) {
-          positions[i * 3 + 1] = 100;
-          positions[i * 3] = (Math.random() - 0.5) * 300;
+        pos[i * 3 + 1] -= 0.6 * windSpeedScalar;
+        pos[i * 3] += Math.sin(wander[i]) * 0.4 + windTilt * 0.5;
+        pos[i * 3 + 2] += Math.cos(wander[i]) * 0.3;
+        if (pos[i * 3 + 1] < -100) {
+          pos[i * 3 + 1] = 100;
+          pos[i * 3] = (Math.random() - 0.5) * 320;
         }
       }
       snowGeo.attributes.position.needsUpdate = true;
     }
 
-    // Thunderstorm Lightning Flash
-    if (activeMode === "thunderstorm") {
+    // 3. Blizzard Gale Vortex Physics
+    if (blizzardMaterial.opacity > 0.01) {
+      const pos = blizzardGeo.attributes.position.array;
+      const spd = blizzardGeo.attributes.speed.array;
+      for (let i = 0; i < pos.length / 3; i++) {
+        pos[i * 3] += spd[i] * (windTilt >= 0 ? 1.5 : -1.5) * windSpeedScalar;
+        pos[i * 3 + 1] -= 1.8 * windSpeedScalar;
+        if (pos[i * 3] > 180) pos[i * 3] = -180;
+        if (pos[i * 3] < -180) pos[i * 3] = 180;
+        if (pos[i * 3 + 1] < -110) pos[i * 3 + 1] = 110;
+      }
+      blizzardGeo.attributes.position.needsUpdate = true;
+    }
+
+    // 4. Heat Shimmer Mirage Physics
+    if (heatMaterial.opacity > 0.01) {
+      const pos = heatGeo.attributes.position.array;
+      const ph = heatGeo.attributes.phase.array;
+      for (let i = 0; i < pos.length / 3; i++) {
+        ph[i] += 0.04;
+        pos[i * 3 + 1] += 0.55;
+        pos[i * 3] += Math.sin(ph[i]) * 0.35;
+        if (pos[i * 3 + 1] > 30) {
+          pos[i * 3 + 1] = -90;
+          pos[i * 3] = (Math.random() - 0.5) * 320;
+        }
+      }
+      heatGeo.attributes.position.needsUpdate = true;
+    }
+
+    // 5. Freezing Frost & Ice Crystal Twinkle
+    if (frostMaterial.opacity > 0.01) {
+      const pos = frostGeo.attributes.position.array;
+      const tw = frostGeo.attributes.twinkle.array;
+      for (let i = 0; i < pos.length / 3; i++) {
+        tw[i] += 0.03;
+        pos[i * 3 + 1] -= 0.15;
+        pos[i * 3] += Math.sin(tw[i]) * 0.2;
+        if (pos[i * 3 + 1] < -100) {
+          pos[i * 3 + 1] = 100;
+          pos[i * 3] = (Math.random() - 0.5) * 320;
+        }
+      }
+      frostGeo.attributes.position.needsUpdate = true;
+    }
+
+    // 6. Fog & Mist Drift Physics
+    if (fogMaterial.opacity > 0.01) {
+      const pos = fogGeo.attributes.position.array;
+      const spd = fogGeo.attributes.speed.array;
+      for (let i = 0; i < pos.length / 3; i++) {
+        pos[i * 3] += spd[i];
+        if (pos[i * 3] > 180) pos[i * 3] = -180;
+      }
+      fogGeo.attributes.position.needsUpdate = true;
+    }
+
+    // 7. Thunderstorm Lightning Flash
+    if (isStorm) {
       lightningTimer++;
-      if (lightningTimer > 180 && Math.random() < 0.04) {
-        lightningLight.intensity = 20 + Math.random() * 15;
+      if (lightningTimer > 160 && Math.random() < 0.045) {
+        lightningLight.intensity = 25 + Math.random() * 20;
         if (state.isAudioActive) ProceduralAudio.triggerThunder();
         lightningTimer = 0;
       } else {
@@ -1306,7 +1596,8 @@ async function fetchLocationAndWeather(lat, lng, options = {}) {
         current.is_day === 1,
         current.wind_speed_10m,
         current.wind_direction_10m,
-        current.cloud_cover
+        current.cloud_cover,
+        current.temperature_2m
       );
       ThreeWidgets.updateWindDirection(current.wind_direction_10m);
     }
