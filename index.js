@@ -188,7 +188,6 @@ const ThreeWeatherFX = (function() {
   let rainGeo, rainPoints, rainMaterial;
   let snowGeo, snowPoints, snowMaterial;
   let sunMesh, sunGlowMesh, sunParticles;
-  let cloudGroup;
   let lightningLight, lightningTimer = 0;
   let activeMode = "clear";
   let windTilt = 0;
@@ -216,7 +215,6 @@ const ThreeWeatherFX = (function() {
     createRainSystem();
     createSnowSystem();
     createSunSystem();
-    createCloudSystem();
 
     window.addEventListener("resize", onResize);
     isInitialized = true;
@@ -358,29 +356,6 @@ const ThreeWeatherFX = (function() {
     scene.add(sunGroup);
   }
 
-  function createCloudSystem() {
-    cloudGroup = new THREE.Group();
-    const cloudMat = new THREE.MeshBasicMaterial({
-      color: 0x94a3b8,
-      transparent: true,
-      opacity: 0,
-      depthWrite: false
-    });
-
-    for (let i = 0; i < 18; i++) {
-      const puffGeo = new THREE.SphereGeometry(15 + Math.random() * 20, 16, 16);
-      const puff = new THREE.Mesh(puffGeo, cloudMat);
-      puff.position.set(
-        (Math.random() - 0.5) * 280,
-        30 + Math.random() * 50,
-        (Math.random() - 0.5) * 80
-      );
-      puff.scale.set(1.6, 0.7, 1);
-      cloudGroup.add(puff);
-    }
-    scene.add(cloudGroup);
-  }
-
   function updateWeather(code, isDay, windSpeed, windDeg, cloudCover) {
     if (!isInitialized) return;
 
@@ -406,7 +381,6 @@ const ThreeWeatherFX = (function() {
     const targetRainOp = (activeMode === "rain" || activeMode === "thunderstorm") ? 0.75 : 0;
     const targetSnowOp = (activeMode === "snow") ? 0.85 : 0;
     const targetSunOp = (activeMode === "clear") ? 0.8 : 0;
-    const targetCloudOp = (activeMode === "clouds" || activeMode === "rain" || activeMode === "thunderstorm") ? 0.22 : 0;
 
     // Smooth opacity lerping
     rainMaterial.opacity += (targetRainOp - rainMaterial.opacity) * 0.05;
@@ -414,12 +388,6 @@ const ThreeWeatherFX = (function() {
     sunMesh.material.opacity += (targetSunOp - sunMesh.material.opacity) * 0.05;
     sunGlowMesh.material.opacity += (targetSunOp * 0.4 - sunGlowMesh.material.opacity) * 0.05;
     sunParticles.material.opacity += (targetSunOp * 0.5 - sunParticles.material.opacity) * 0.05;
-
-    cloudGroup.children.forEach(puff => {
-      puff.material.opacity += (targetCloudOp - puff.material.opacity) * 0.05;
-      puff.position.x += 0.04 * windSpeedScalar;
-      if (puff.position.x > 160) puff.position.x = -160;
-    });
 
     // Rain Simulation
     if (rainMaterial.opacity > 0.01) {
