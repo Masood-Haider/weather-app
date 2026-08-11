@@ -1,7 +1,7 @@
 /**
  * ==========================================================================
  * WEATHER APP - PURE BLACK & WHITE / MONOCHROME DESIGN SYSTEM
- * Divided Spatial HUD Pods Layout (Left Pod, Bottom Deck, Right Pod)
+ * Compact Spatial HUD Pods Layout with Visible Bottom Controls
  * ==========================================================================
  */
 
@@ -30,15 +30,15 @@
   --font-heading: 'Outfit', 'Inter', -apple-system, sans-serif;
   --font-mono: 'JetBrains Mono', monospace;
 
-  --radius-xs: 6px;
-  --radius-sm: 8px;
-  --radius-md: 12px;
-  --radius-lg: 18px;
-  --radius-xl: 24px;
+  --radius-xs: 4px;
+  --radius-sm: 6px;
+  --radius-md: 10px;
+  --radius-lg: 14px;
+  --radius-xl: 18px;
   --radius-full: 9999px;
 
-  --shadow-card: 0 16px 40px rgba(0, 0, 0, 0.8), 0 0 1px rgba(255, 255, 255, 0.2);
-  --shadow-glow-white: 0 0 25px rgba(255, 255, 255, 0.2);
+  --shadow-card: 0 14px 34px rgba(0, 0, 0, 0.85), 0 0 1px rgba(255, 255, 255, 0.2);
+  --shadow-glow-white: 0 0 20px rgba(255, 255, 255, 0.2);
   --shadow-subtle: 0 4px 12px rgba(0, 0, 0, 0.5);
 
   --transition-fast: 0.18s cubic-bezier(0.16, 1, 0.3, 1);
@@ -59,8 +59,8 @@ html, body {
   background-color: var(--bg-core);
   color: var(--text-primary);
   font-family: var(--font-body);
-  font-size: 14px;
-  line-height: 1.45;
+  font-size: 13px;
+  line-height: 1.4;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   user-select: none;
@@ -126,40 +126,41 @@ body.view-3d-mode #globe-container {
   cursor: grabbing;
 }
 
-/* 3D Globe HUD Controls */
+/* 3D Globe HUD Bottom-Left Controls (Prominent & Visible) */
 .globe-hud {
   position: absolute;
-  bottom: 24px;
-  left: 24px;
-  z-index: 30;
+  bottom: 20px;
+  left: 20px;
+  z-index: 40;
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: 8px;
+  pointer-events: auto;
 }
 
 .globe-hud-pill {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 6px;
   background: var(--bg-surface);
   backdrop-filter: blur(16px);
   -webkit-backdrop-filter: blur(16px);
   border: 1px solid var(--border-card);
-  padding: 8px 14px;
+  padding: 6px 12px;
   border-radius: var(--radius-full);
   font-family: var(--font-mono);
-  font-size: 12px;
+  font-size: 11px;
   font-weight: 600;
   color: #ffffff;
   box-shadow: var(--shadow-card);
 }
 
 .hud-status-dot {
-  width: 8px;
-  height: 8px;
+  width: 6px;
+  height: 6px;
   border-radius: 50%;
   background: #ffffff;
-  box-shadow: 0 0 10px #ffffff;
+  box-shadow: 0 0 8px #ffffff;
   animation: pulse-dot 2s infinite ease-in-out;
 }
 
@@ -171,22 +172,22 @@ body.view-3d-mode #globe-container {
 .globe-hud-actions {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 6px;
 }
 
 .globe-ctrl-btn {
   display: flex;
   align-items: center;
-  gap: 6px;
+  gap: 5px;
   background: var(--bg-surface);
   backdrop-filter: blur(16px);
   -webkit-backdrop-filter: blur(16px);
   border: 1px solid var(--border-card);
   color: var(--text-primary);
-  padding: 8px 14px;
+  padding: 6px 12px;
   border-radius: var(--radius-full);
   font-family: var(--font-body);
-  font-size: 12px;
+  font-size: 11px;
   font-weight: 600;
   cursor: pointer;
   box-shadow: var(--shadow-card);
@@ -212,7 +213,7 @@ body.view-3d-mode #globe-container {
 }
 
 .leaflet-top {
-  top: 90px !important;
+  top: 75px !important;
 }
 
 .leaflet-control-zoom {
@@ -221,7 +222,7 @@ body.view-3d-mode #globe-container {
   border-radius: var(--radius-md) !important;
   overflow: hidden;
   margin-top: 10px !important;
-  margin-left: 22px !important;
+  margin-left: 20px !important;
 }
 
 .leaflet-control-zoom a {
@@ -229,10 +230,10 @@ body.view-3d-mode #globe-container {
   color: var(--text-primary) !important;
   border: none !important;
   border-bottom: 1px solid var(--border-card) !important;
-  width: 34px !important;
-  height: 34px !important;
-  line-height: 34px !important;
-  font-size: 16px !important;
+  width: 30px !important;
+  height: 30px !important;
+  line-height: 30px !important;
+  font-size: 14px !important;
   transition: var(--transition-fast);
 }
 
@@ -245,7 +246,7 @@ body.view-3d-mode #globe-container {
   color: #ffffff !important;
 }
 
-/* Custom Marker Pin Animation */
+/* Custom Marker Pin */
 .custom-pin-marker {
   position: relative;
 }
@@ -255,8 +256,8 @@ body.view-3d-mode #globe-container {
   top: 50%;
   left: 50%;
   transform: translate(-50%, -50%);
-  width: 36px;
-  height: 36px;
+  width: 32px;
+  height: 32px;
   border-radius: 50%;
   background: rgba(255, 255, 255, 0.4);
   animation: radar-ping 2s cubic-bezier(0, 0, 0.2, 1) infinite;
@@ -271,12 +272,12 @@ body.view-3d-mode #globe-container {
   top: 50%;
   left: 50%;
   transform: translate(-50%, -50%);
-  width: 14px;
-  height: 14px;
+  width: 12px;
+  height: 12px;
   border-radius: 50%;
   background: #ffffff;
   border: 2px solid #000000;
-  box-shadow: 0 0 15px rgba(255, 255, 255, 0.9);
+  box-shadow: 0 0 12px rgba(255, 255, 255, 0.9);
 }
 
 @keyframes radar-ping {
@@ -309,8 +310,8 @@ body.view-3d-mode #globe-container {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 16px 24px;
-  gap: 20px;
+  padding: 12px 20px;
+  gap: 16px;
   z-index: 30;
 }
 
@@ -318,12 +319,12 @@ body.view-3d-mode #globe-container {
 .brand-badge {
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: 8px;
   background: var(--bg-surface);
   backdrop-filter: blur(20px);
   -webkit-backdrop-filter: blur(20px);
   border: 1px solid var(--border-card);
-  padding: 8px 16px;
+  padding: 6px 12px;
   border-radius: var(--radius-md);
   box-shadow: var(--shadow-card);
   cursor: pointer;
@@ -336,18 +337,18 @@ body.view-3d-mode #globe-container {
 }
 
 .brand-icon {
-  width: 28px;
-  height: 28px;
+  width: 24px;
+  height: 24px;
   display: grid;
   place-items: center;
   background: #ffffff;
-  border-radius: var(--radius-sm);
+  border-radius: var(--radius-xs);
   color: #000000;
 }
 
 .brand-text h1 {
   font-family: var(--font-heading);
-  font-size: 16px;
+  font-size: 14px;
   font-weight: 800;
   letter-spacing: -0.01em;
   color: var(--text-primary);
@@ -357,7 +358,7 @@ body.view-3d-mode #globe-container {
 .search-wrapper {
   position: relative;
   flex: 1;
-  max-width: 480px;
+  max-width: 400px;
 }
 
 .search-box {
@@ -368,7 +369,7 @@ body.view-3d-mode #globe-container {
   -webkit-backdrop-filter: blur(20px);
   border: 1px solid rgba(255, 255, 255, 0.18);
   border-radius: var(--radius-md);
-  padding: 8px 16px;
+  padding: 6px 12px;
   box-shadow: var(--shadow-card);
   transition: var(--transition-fast);
 }
@@ -383,7 +384,7 @@ body.view-3d-mode #globe-container {
   color: #ffffff;
   display: flex;
   align-items: center;
-  margin-right: 10px;
+  margin-right: 8px;
 }
 
 .search-input {
@@ -392,7 +393,7 @@ body.view-3d-mode #globe-container {
   border: none;
   outline: none;
   font-family: var(--font-body);
-  font-size: 14px;
+  font-size: 13px;
   font-weight: 500;
   color: #ffffff;
 }
@@ -410,8 +411,8 @@ body.view-3d-mode #globe-container {
   display: none;
   align-items: center;
   justify-content: center;
-  padding: 4px;
-  margin-right: 6px;
+  padding: 2px;
+  margin-right: 4px;
 }
 
 .search-clear-btn:hover {
@@ -420,19 +421,19 @@ body.view-3d-mode #globe-container {
 
 .search-shortcut {
   font-family: var(--font-mono);
-  font-size: 11px;
+  font-size: 10px;
   font-weight: 700;
   color: var(--text-muted);
   background: #242424;
   border: 1px solid rgba(255, 255, 255, 0.15);
-  border-radius: 4px;
-  padding: 2px 6px;
+  border-radius: 3px;
+  padding: 1px 5px;
 }
 
 /* Autocomplete Dropdown */
 .search-results-dropdown {
   position: absolute;
-  top: calc(100% + 8px);
+  top: calc(100% + 6px);
   left: 0;
   right: 0;
   background: #0d0d0d;
@@ -441,7 +442,7 @@ body.view-3d-mode #globe-container {
   border: 1px solid rgba(255, 255, 255, 0.2);
   border-radius: var(--radius-md);
   box-shadow: var(--shadow-card);
-  max-height: 380px;
+  max-height: 320px;
   overflow-y: auto;
   display: none;
   z-index: 50;
@@ -455,7 +456,7 @@ body.view-3d-mode #globe-container {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 10px 16px;
+  padding: 8px 14px;
   border-bottom: 1px solid rgba(255, 255, 255, 0.08);
   cursor: pointer;
   transition: var(--transition-fast);
@@ -472,11 +473,11 @@ body.view-3d-mode #globe-container {
 .search-result-info {
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: 10px;
 }
 
 .result-flag {
-  font-size: 20px;
+  font-size: 18px;
 }
 
 .result-text {
@@ -487,52 +488,52 @@ body.view-3d-mode #globe-container {
 .result-name {
   font-weight: 600;
   color: #ffffff;
-  font-size: 14px;
+  font-size: 13px;
 }
 
 .result-country {
-  font-size: 12px;
+  font-size: 11px;
   color: var(--text-secondary);
 }
 
 .result-coords {
   font-family: var(--font-mono);
-  font-size: 11px;
+  font-size: 10px;
   color: var(--text-muted);
 }
 
 .search-loading-state, .search-empty-state {
-  padding: 20px;
+  padding: 16px;
   text-align: center;
   color: var(--text-secondary);
-  font-size: 13px;
+  font-size: 12px;
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 10px;
+  gap: 8px;
 }
 
 /* Nav Actions */
 .nav-actions {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 6px;
 }
 
 .action-btn {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  gap: 7px;
+  gap: 6px;
   background: var(--bg-surface);
   backdrop-filter: blur(20px);
   -webkit-backdrop-filter: blur(20px);
   border: 1px solid var(--border-card);
   color: var(--text-primary);
-  padding: 8px 14px;
+  padding: 6px 12px;
   border-radius: var(--radius-md);
   font-family: var(--font-body);
-  font-size: 13px;
+  font-size: 12px;
   font-weight: 600;
   cursor: pointer;
   box-shadow: var(--shadow-card);
@@ -569,7 +570,7 @@ body.view-3d-mode .mode-toggle-btn {
   display: none;
   align-items: flex-end;
   gap: 2px;
-  height: 12px;
+  height: 10px;
 }
 
 .audio-toggle-btn.active .sound-wave-bars {
@@ -587,40 +588,40 @@ body.view-3d-mode .mode-toggle-btn {
   animation: equalize 1s infinite ease-in-out alternate;
 }
 
-.sound-wave-bars .bar-1 { height: 6px; animation-delay: 0.1s; }
-.sound-wave-bars .bar-2 { height: 12px; animation-delay: 0.3s; }
-.sound-wave-bars .bar-3 { height: 8px; animation-delay: 0.2s; }
+.sound-wave-bars .bar-1 { height: 5px; animation-delay: 0.1s; }
+.sound-wave-bars .bar-2 { height: 10px; animation-delay: 0.3s; }
+.sound-wave-bars .bar-3 { height: 7px; animation-delay: 0.2s; }
 
 @keyframes equalize {
-  0% { height: 3px; }
-  100% { height: 12px; }
+  0% { height: 2px; }
+  100% { height: 10px; }
 }
 
 /* Unit Switcher */
 .unit-btn {
   font-family: var(--font-heading);
   font-weight: 800;
-  padding: 8px 12px;
-  min-width: 44px;
+  padding: 6px 10px;
+  min-width: 38px;
 }
 
 /* Layer Picker Dropdown Menu */
 .layer-picker-menu {
   position: absolute;
-  top: 70px;
-  right: 24px;
+  top: 60px;
+  right: 20px;
   background: var(--bg-surface);
   backdrop-filter: blur(28px);
   -webkit-backdrop-filter: blur(28px);
   border: 1px solid var(--border-card);
   border-radius: var(--radius-md);
-  padding: 6px;
+  padding: 5px;
   box-shadow: var(--shadow-card);
   display: none;
   flex-direction: column;
-  gap: 4px;
+  gap: 3px;
   z-index: 50;
-  min-width: 170px;
+  min-width: 160px;
 }
 
 .layer-picker-menu.active {
@@ -631,13 +632,13 @@ body.view-3d-mode .mode-toggle-btn {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 8px 12px;
+  padding: 7px 10px;
   border-radius: var(--radius-sm);
   background: transparent;
   border: none;
   color: var(--text-secondary);
   font-family: var(--font-body);
-  font-size: 13px;
+  font-size: 12px;
   font-weight: 600;
   cursor: pointer;
   transition: var(--transition-fast);
@@ -655,7 +656,7 @@ body.view-3d-mode .mode-toggle-btn {
 }
 
 /* ==========================================================================
-   DIVIDED SPATIAL HUD PODS (LEFT POD, BOTTOM DECK, RIGHT POD)
+   COMPACT SPATIAL HUD PODS (LEFT POD, BOTTOM DECK, RIGHT POD)
    ========================================================================== */
 
 .hud-spaces-container {
@@ -673,56 +674,56 @@ body.view-3d-mode .mode-toggle-btn {
   backdrop-filter: blur(28px);
   -webkit-backdrop-filter: blur(28px);
   border: 1px solid var(--border-card);
-  border-radius: var(--radius-xl);
+  border-radius: var(--radius-lg);
   box-shadow: var(--shadow-card);
   pointer-events: auto;
   transition: transform var(--transition-smooth), opacity var(--transition-smooth);
 }
 
 .hud-pod-inner {
-  padding: 20px;
+  padding: 14px 16px;
   display: flex;
   flex-direction: column;
-  gap: 18px;
+  gap: 12px;
 }
 
-/* 1. LEFT SPACE HUD POD */
+/* 1. LEFT COMPACT HUD POD */
 .hud-left-pod {
   position: absolute;
-  left: 24px;
-  top: 90px;
-  width: 370px;
-  max-width: calc(100vw - 48px);
+  left: 20px;
+  top: 75px;
+  width: 290px;
+  max-width: calc(100vw - 40px);
 }
 
 .location-header-block {
   display: flex;
   align-items: flex-start;
   justify-content: space-between;
-  gap: 12px;
-  padding-bottom: 14px;
+  gap: 8px;
+  padding-bottom: 10px;
   border-bottom: 1px solid var(--border-card);
 }
 
 .location-meta {
   display: flex;
   flex-direction: column;
-  gap: 3px;
+  gap: 2px;
 }
 
 .location-place {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 6px;
 }
 
 .location-flag {
-  font-size: 22px;
+  font-size: 18px;
 }
 
 .location-city {
   font-family: var(--font-heading);
-  font-size: 22px;
+  font-size: 17px;
   font-weight: 800;
   color: #ffffff;
   line-height: 1.1;
@@ -731,8 +732,8 @@ body.view-3d-mode .mode-toggle-btn {
 .location-subtitle-row {
   display: flex;
   align-items: center;
-  gap: 6px;
-  font-size: 12px;
+  gap: 4px;
+  font-size: 11px;
   color: var(--text-secondary);
 }
 
@@ -741,7 +742,7 @@ body.view-3d-mode .mode-toggle-btn {
 }
 
 .location-elevation-badge {
-  font-size: 11px;
+  font-size: 10px;
   color: #ffffff;
   font-weight: 600;
   font-family: var(--font-mono);
@@ -751,12 +752,12 @@ body.view-3d-mode .mode-toggle-btn {
   display: flex;
   flex-direction: column;
   align-items: flex-end;
-  gap: 2px;
+  gap: 1px;
 }
 
 .live-time {
   font-family: var(--font-heading);
-  font-size: 18px;
+  font-size: 15px;
   font-weight: 800;
   color: #ffffff;
   font-variant-numeric: tabular-nums;
@@ -766,43 +767,43 @@ body.view-3d-mode .mode-toggle-btn {
 .live-date-row {
   display: flex;
   align-items: center;
-  gap: 6px;
+  gap: 4px;
 }
 
 .live-date {
-  font-size: 10px;
+  font-size: 9px;
   font-weight: 600;
   color: var(--text-muted);
   text-transform: uppercase;
 }
 
 .timezone-pill {
-  font-size: 10px;
+  font-size: 9px;
   background: #242424;
   color: #ffffff;
   border: 1px solid var(--border-card);
-  padding: 1px 6px;
-  border-radius: 4px;
+  padding: 1px 4px;
+  border-radius: 3px;
   font-weight: 700;
 }
 
-/* Hero Section (Pure Black & White) */
+/* Hero Section */
 .weather-hero {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 16px;
+  gap: 10px;
   background: var(--bg-surface-elevated);
   border: 1px solid var(--border-card);
-  border-radius: var(--radius-lg);
-  padding: 16px 18px;
-  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.5);
+  border-radius: var(--radius-md);
+  padding: 10px 12px;
+  box-shadow: 0 3px 12px rgba(0, 0, 0, 0.4);
 }
 
 .temp-primary-box {
   display: flex;
   flex-direction: column;
-  gap: 4px;
+  gap: 2px;
 }
 
 .temp-main {
@@ -813,7 +814,7 @@ body.view-3d-mode .mode-toggle-btn {
 
 #temp-value {
   font-family: var(--font-heading);
-  font-size: 52px;
+  font-size: 38px;
   font-weight: 900;
   letter-spacing: -0.03em;
   color: #ffffff;
@@ -821,7 +822,7 @@ body.view-3d-mode .mode-toggle-btn {
 
 .temp-unit-symbol {
   font-family: var(--font-heading);
-  font-size: 24px;
+  font-size: 18px;
   font-weight: 700;
   color: #ffffff;
   margin-left: 2px;
@@ -830,11 +831,11 @@ body.view-3d-mode .mode-toggle-btn {
 .temp-meta-badges {
   display: flex;
   flex-direction: column;
-  gap: 4px;
+  gap: 2px;
 }
 
 .temp-apparent {
-  font-size: 13px;
+  font-size: 11px;
   font-weight: 600;
   color: #a3a3a3;
 }
@@ -842,8 +843,8 @@ body.view-3d-mode .mode-toggle-btn {
 .temp-high-low-badge {
   display: flex;
   align-items: center;
-  gap: 8px;
-  font-size: 12px;
+  gap: 6px;
+  font-size: 11px;
   font-weight: 700;
 }
 
@@ -855,34 +856,34 @@ body.view-3d-mode .mode-toggle-btn {
   flex-direction: column;
   align-items: flex-end;
   text-align: right;
-  gap: 4px;
+  gap: 2px;
 }
 
 .weather-hero-icon-container {
-  width: 54px;
-  height: 54px;
+  width: 40px;
+  height: 40px;
   display: flex;
   align-items: center;
   justify-content: center;
-  filter: drop-shadow(0 4px 12px rgba(255, 255, 255, 0.2));
+  filter: drop-shadow(0 2px 8px rgba(255, 255, 255, 0.2));
 }
 
 .weather-condition-title {
   font-family: var(--font-heading);
-  font-size: 16px;
+  font-size: 13px;
   font-weight: 700;
   color: #ffffff;
 }
 
 .weather-status-tag {
-  font-size: 10px;
+  font-size: 9px;
   font-weight: 700;
   text-transform: uppercase;
-  letter-spacing: 0.04em;
+  letter-spacing: 0.03em;
   color: #ffffff;
   background: rgba(255, 255, 255, 0.08);
-  border: 1px solid rgba(255, 255, 255, 0.2);
-  padding: 2px 8px;
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  padding: 1px 6px;
   border-radius: var(--radius-full);
 }
 
@@ -890,18 +891,18 @@ body.view-3d-mode .mode-toggle-btn {
 .solar-section-block {
   background: var(--bg-surface-elevated);
   border: 1px solid var(--border-card);
-  border-radius: var(--radius-lg);
-  padding: 14px 16px;
+  border-radius: var(--radius-md);
+  padding: 10px 12px;
   display: flex;
   flex-direction: column;
-  gap: 10px;
+  gap: 6px;
 }
 
 .sun-cycle-box {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 12px;
+  gap: 8px;
 }
 
 .sun-item {
@@ -910,7 +911,7 @@ body.view-3d-mode .mode-toggle-btn {
 }
 
 .sun-label {
-  font-size: 11px;
+  font-size: 9px;
   font-weight: 600;
   color: var(--text-muted);
   text-transform: uppercase;
@@ -918,7 +919,7 @@ body.view-3d-mode .mode-toggle-btn {
 
 .sun-time {
   font-family: var(--font-heading);
-  font-size: 14px;
+  font-size: 12px;
   font-weight: 800;
   color: #ffffff;
 }
@@ -926,26 +927,29 @@ body.view-3d-mode .mode-toggle-btn {
 .solar-arc-track {
   flex: 1;
   position: relative;
-  height: 54px;
+  height: 42px;
   display: grid;
   place-items: center;
 }
 
 .solar-3d-canvas {
-  width: 160px;
-  height: 54px;
+  width: 130px;
+  height: 42px;
 }
 
-/* 2. BOTTOM SPACE HUD DECK (4 TELEMETRY GAUGES) */
+/* 2. BOTTOM COMPACT HUD DECK (4 TELEMETRY GAUGES) */
 .hud-bottom-deck {
   position: absolute;
-  left: 414px;
-  right: 434px;
-  bottom: 24px;
+  left: 50%;
+  transform: translateX(-50%);
+  bottom: 20px;
+  width: auto;
+  max-width: 660px;
   display: grid;
   grid-template-columns: repeat(4, 1fr);
-  gap: 12px;
+  gap: 10px;
   pointer-events: auto;
+  z-index: 35;
 }
 
 .telemetry-card {
@@ -953,11 +957,12 @@ body.view-3d-mode .mode-toggle-btn {
   backdrop-filter: blur(28px);
   -webkit-backdrop-filter: blur(28px);
   border: 1px solid var(--border-card);
-  border-radius: var(--radius-lg);
-  padding: 12px 14px;
+  border-radius: var(--radius-md);
+  padding: 8px 12px;
   display: flex;
   flex-direction: column;
-  gap: 6px;
+  gap: 4px;
+  min-width: 125px;
   box-shadow: var(--shadow-card);
   transition: transform 0.2s ease, border-color 0.2s ease;
 }
@@ -970,15 +975,15 @@ body.view-3d-mode .mode-toggle-btn {
 .telemetry-head {
   display: flex;
   align-items: center;
-  gap: 6px;
-  font-size: 11px;
+  gap: 5px;
+  font-size: 10px;
   font-weight: 600;
   color: #a3a3a3;
 }
 
 .telemetry-val {
   font-family: var(--font-heading);
-  font-size: 19px;
+  font-size: 16px;
   font-weight: 800;
   color: #ffffff;
   line-height: 1.1;
@@ -986,11 +991,11 @@ body.view-3d-mode .mode-toggle-btn {
 
 .telemetry-bar-wrap {
   width: 100%;
-  height: 4px;
+  height: 3px;
   background: var(--bg-subtle);
   border-radius: var(--radius-full);
   overflow: hidden;
-  margin: 2px 0;
+  margin: 1px 0;
 }
 
 .telemetry-bar-fill {
@@ -1001,7 +1006,7 @@ body.view-3d-mode .mode-toggle-btn {
 }
 
 .telemetry-sub {
-  font-size: 11px;
+  font-size: 9px;
   color: var(--text-muted);
   font-weight: 500;
 }
@@ -1013,27 +1018,27 @@ body.view-3d-mode .mode-toggle-btn {
 }
 
 .wind-compass-3d-wrapper {
-  width: 48px;
-  height: 48px;
+  width: 40px;
+  height: 40px;
   position: relative;
   display: grid;
   place-items: center;
 }
 
 #wind-3d-compass-canvas {
-  width: 48px;
-  height: 48px;
+  width: 40px;
+  height: 40px;
   border-radius: 50%;
 }
 
-/* 3. RIGHT SPACE HUD POD (FORECASTS & ATMOSPHERIC DETAILS) */
+/* 3. RIGHT COMPACT HUD POD */
 .hud-right-pod {
   position: absolute;
-  right: 24px;
-  top: 90px;
-  bottom: 24px;
-  width: 390px;
-  max-width: calc(100vw - 48px);
+  right: 20px;
+  top: 75px;
+  bottom: 20px;
+  width: 310px;
+  max-width: calc(100vw - 40px);
   overflow: hidden;
 }
 
@@ -1045,18 +1050,18 @@ body.view-3d-mode .mode-toggle-btn {
 }
 
 .hud-right-scroll::-webkit-scrollbar {
-  width: 4px;
+  width: 3px;
 }
 
 .hud-right-scroll::-webkit-scrollbar-thumb {
   background: var(--border-card);
-  border-radius: 4px;
+  border-radius: 3px;
 }
 
 .section-block {
   display: flex;
   flex-direction: column;
-  gap: 10px;
+  gap: 8px;
 }
 
 .section-header {
@@ -1068,8 +1073,8 @@ body.view-3d-mode .mode-toggle-btn {
 .section-title {
   display: flex;
   align-items: center;
-  gap: 6px;
-  font-size: 12px;
+  gap: 5px;
+  font-size: 11px;
   font-weight: 700;
   color: #ffffff;
   text-transform: uppercase;
@@ -1077,44 +1082,44 @@ body.view-3d-mode .mode-toggle-btn {
 }
 
 .section-badge {
-  font-size: 10px;
+  font-size: 9px;
   font-weight: 700;
   color: var(--text-muted);
   background: var(--bg-surface-highlight);
   border: 1px solid var(--border-subtle);
-  padding: 2px 7px;
+  padding: 1px 6px;
   border-radius: var(--radius-full);
 }
 
 /* Hourly Forecast Horizontal Scroll */
 .hourly-scroll-container {
   display: flex;
-  gap: 8px;
+  gap: 6px;
   overflow-x: auto;
-  padding-bottom: 6px;
+  padding-bottom: 4px;
   scrollbar-width: thin;
   scrollbar-color: var(--border-card) transparent;
 }
 
 .hourly-scroll-container::-webkit-scrollbar {
-  height: 4px;
+  height: 3px;
 }
 
 .hourly-scroll-container::-webkit-scrollbar-thumb {
   background: var(--border-card);
-  border-radius: 4px;
+  border-radius: 3px;
 }
 
 .hourly-card {
-  flex: 0 0 74px;
+  flex: 0 0 58px;
   background: var(--bg-surface-elevated);
   border: 1px solid var(--border-card);
-  border-radius: var(--radius-md);
-  padding: 10px 6px;
+  border-radius: var(--radius-sm);
+  padding: 7px 4px;
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 5px;
+  gap: 4px;
   transition: transform 0.2s ease, border-color 0.2s ease;
 }
 
@@ -1126,31 +1131,31 @@ body.view-3d-mode .mode-toggle-btn {
 .hourly-card.active {
   border-color: #ffffff;
   background: var(--bg-surface-highlight);
-  box-shadow: 0 0 12px rgba(255, 255, 255, 0.2);
+  box-shadow: 0 0 10px rgba(255, 255, 255, 0.2);
 }
 
 .hourly-time {
-  font-size: 11px;
+  font-size: 10px;
   font-weight: 600;
   color: var(--text-secondary);
 }
 
 .hourly-icon {
-  width: 24px;
-  height: 24px;
+  width: 20px;
+  height: 20px;
   display: grid;
   place-items: center;
 }
 
 .hourly-temp {
   font-family: var(--font-heading);
-  font-size: 14px;
+  font-size: 12px;
   font-weight: 800;
   color: #ffffff;
 }
 
 .hourly-pop {
-  font-size: 10px;
+  font-size: 9px;
   font-weight: 600;
   color: #a3a3a3;
 }
@@ -1159,7 +1164,7 @@ body.view-3d-mode .mode-toggle-btn {
 .daily-forecast-list {
   display: flex;
   flex-direction: column;
-  gap: 6px;
+  gap: 5px;
 }
 
 .daily-item {
@@ -1168,8 +1173,8 @@ body.view-3d-mode .mode-toggle-btn {
   justify-content: space-between;
   background: var(--bg-surface-elevated);
   border: 1px solid var(--border-card);
-  border-radius: var(--radius-md);
-  padding: 8px 12px;
+  border-radius: var(--radius-sm);
+  padding: 6px 10px;
   transition: var(--transition-fast);
 }
 
@@ -1179,27 +1184,27 @@ body.view-3d-mode .mode-toggle-btn {
 }
 
 .daily-day {
-  width: 48px;
-  font-size: 12px;
+  width: 40px;
+  font-size: 11px;
   font-weight: 600;
   color: #ffffff;
 }
 
 .daily-icon {
-  width: 24px;
-  height: 24px;
+  width: 20px;
+  height: 20px;
   display: grid;
   place-items: center;
 }
 
 .daily-temp-bar-container {
   flex: 1;
-  margin: 0 12px;
+  margin: 0 10px;
 }
 
 .temp-bar-track {
   width: 100%;
-  height: 4px;
+  height: 3px;
   background: var(--bg-subtle);
   border-radius: var(--radius-full);
   position: relative;
@@ -1217,8 +1222,8 @@ body.view-3d-mode .mode-toggle-btn {
 .daily-temp-extremes {
   display: flex;
   align-items: center;
-  gap: 6px;
-  font-size: 12px;
+  gap: 5px;
+  font-size: 11px;
   font-weight: 700;
 }
 
@@ -1229,48 +1234,48 @@ body.view-3d-mode .mode-toggle-btn {
 .details-grid {
   display: grid;
   grid-template-columns: repeat(2, 1fr);
-  gap: 8px;
+  gap: 6px;
 }
 
 .detail-card {
   background: var(--bg-surface-elevated);
   border: 1px solid var(--border-card);
-  border-radius: var(--radius-md);
-  padding: 10px 12px;
+  border-radius: var(--radius-sm);
+  padding: 7px 10px;
   display: flex;
   flex-direction: column;
-  gap: 3px;
+  gap: 2px;
   transition: transform 0.2s ease, border-color 0.2s ease;
 }
 
 .detail-card:hover {
   border-color: #ffffff;
-  transform: translateY(-2px);
+  transform: translateY(-1px);
 }
 
 .detail-card-head {
   display: flex;
   align-items: center;
-  gap: 5px;
-  font-size: 11px;
+  gap: 4px;
+  font-size: 10px;
   font-weight: 600;
   color: #a3a3a3;
 }
 
 .detail-card-val {
   font-family: var(--font-heading);
-  font-size: 15px;
+  font-size: 13px;
   font-weight: 800;
   color: #ffffff;
 }
 
 .detail-card-val.coords-val {
   font-family: var(--font-mono);
-  font-size: 12px;
+  font-size: 11px;
 }
 
 .detail-card-sub {
-  font-size: 10px;
+  font-size: 9px;
   color: var(--text-muted);
   font-weight: 500;
 }
@@ -1278,13 +1283,13 @@ body.view-3d-mode .mode-toggle-btn {
 /* Toast Notifications */
 .toast-container {
   position: absolute;
-  top: 90px;
+  top: 75px;
   left: 50%;
   transform: translateX(-50%);
   z-index: 100;
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: 6px;
   pointer-events: none;
 }
 
@@ -1294,40 +1299,31 @@ body.view-3d-mode .mode-toggle-btn {
   -webkit-backdrop-filter: blur(20px);
   border: 1px solid rgba(255, 255, 255, 0.25);
   color: #ffffff;
-  padding: 10px 18px;
+  padding: 8px 16px;
   border-radius: var(--radius-full);
-  font-size: 13px;
+  font-size: 12px;
   font-weight: 600;
   display: flex;
   align-items: center;
-  gap: 10px;
-  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.8);
+  gap: 8px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.8);
   animation: toast-in 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards;
   pointer-events: auto;
 }
 
 @keyframes toast-in {
-  from { opacity: 0; transform: translateY(-12px) scale(0.95); }
+  from { opacity: 0; transform: translateY(-10px) scale(0.95); }
   to { opacity: 1; transform: translateY(0) scale(1); }
 }
 
 /* ==========================================================================
-   RESPONSIVE LAYOUT BREAKPOINTS
+   RESPONSIVE BREAKPOINTS
    ========================================================================== */
 
-@media (max-width: 1280px) {
+@media (max-width: 1200px) {
   .hud-bottom-deck {
-    left: 24px;
-    right: 424px;
+    max-width: 520px;
     grid-template-columns: repeat(2, 1fr);
-  }
-  
-  .hud-left-pod {
-    width: 330px;
-  }
-  
-  .hud-right-pod {
-    width: 370px;
   }
 }
 
@@ -1335,19 +1331,25 @@ body.view-3d-mode .mode-toggle-btn {
   .hud-spaces-container {
     overflow-y: auto;
     pointer-events: auto;
-    padding: 90px 16px 24px 16px;
+    padding: 75px 14px 20px 14px;
     display: flex;
     flex-direction: column;
-    gap: 16px;
+    gap: 12px;
   }
 
   .hud-left-pod, .hud-bottom-deck, .hud-right-pod {
     position: static;
     width: 100%;
     max-width: 100%;
+    transform: none;
   }
 
   .hud-bottom-deck {
     grid-template-columns: repeat(2, 1fr);
+  }
+  
+  .globe-hud {
+    position: static;
+    margin-top: 10px;
   }
 }
