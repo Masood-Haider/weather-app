@@ -1788,6 +1788,24 @@ function setupEventListeners() {
     });
   });
 
+  // 11. Quick City Preset Chips
+  document.querySelectorAll(".city-chip").forEach((chip) => {
+    chip.addEventListener("click", () => {
+      const lat = parseFloat(chip.dataset.lat);
+      const lng = parseFloat(chip.dataset.lng);
+      const name = chip.dataset.name;
+      const country = chip.dataset.country;
+      const code = chip.dataset.code || "";
+
+      fetchLocationAndWeather(lat, lng, {
+        city: name,
+        country: country,
+        countryCode: code,
+        zoom: 7
+      });
+    });
+  });
+
   // 11. Minimize / Restore Dashboard
   dom.minimizeBtn.addEventListener("click", () => {
     dom.mainDashboard.classList.add("collapsed");

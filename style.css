@@ -205,7 +205,7 @@ body.view-3d-mode #globe-container {
 }
 
 .leaflet-top {
-  top: 76px !important;
+  top: 125px !important;
 }
 
 .leaflet-control-zoom {
@@ -664,6 +664,48 @@ body.view-3d-mode .mode-toggle-btn {
   font-weight: 700;
 }
 
+/* Quick City Preset Chips / Buttons */
+.quick-chips-bar {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  overflow-x: auto;
+  padding: 6px 2px;
+  max-width: 1520px;
+  margin: 8px auto 0 auto;
+  scrollbar-width: none;
+  z-index: 20;
+}
+
+.quick-chips-bar::-webkit-scrollbar {
+  display: none;
+}
+
+.city-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: var(--bg-surface);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid var(--border-card);
+  color: var(--text-secondary);
+  padding: 6px 14px;
+  border-radius: var(--radius-sm);
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: var(--transition-fast);
+}
+
+.city-chip:hover {
+  background: var(--bg-surface-hover);
+  border-color: #ffffff;
+  color: #ffffff;
+  transform: translateY(-1px);
+}
+
 /* ==========================================================================
    MONOCHROME WEATHER DASHBOARD CARD (COMPACT & DIVIDED TABS)
    ========================================================================== */
@@ -671,10 +713,10 @@ body.view-3d-mode .mode-toggle-btn {
 .main-dashboard {
   position: absolute;
   right: 22px;
-  top: 76px;
+  top: 125px;
   width: 380px;
   max-width: calc(100vw - 44px);
-  max-height: calc(100vh - 96px);
+  max-height: calc(100vh - 145px);
   display: flex;
   flex-direction: column;
   z-index: 25;
@@ -688,7 +730,7 @@ body.view-3d-mode .mode-toggle-btn {
 
 .dashboard-toggle-btn {
   position: absolute;
-  top: 76px;
+  top: 125px;
   right: 22px;
   z-index: 26;
   background: var(--bg-surface);
