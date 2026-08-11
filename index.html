@@ -3,8 +3,8 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Weather App - 3D Meteorological Engine</title>
-  <meta name="description" content="Explore real-time weather forecasts, 3D atmospheric simulations, and an interactive 3D Earth Globe with smooth inertia navigation.">
+  <title>Weather App</title>
+  <meta name="description" content="Explore real-time weather forecasts, realistic 3D Earth Globe, and worldwide meteorological data.">
 
   <!-- Google Fonts -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -22,13 +22,13 @@
 </head>
 <body class="view-2d-mode">
 
-  <!-- Full-Screen 3D Atmospheric Weather FX Canvas (Rain, Snow, Lightning, Sunbeams, Clouds) -->
+  <!-- Full-Screen 3D Atmospheric Weather FX Canvas -->
   <canvas id="weather-fx-canvas" aria-hidden="true"></canvas>
 
   <!-- Full-Screen Interactive 2D World Map -->
   <div id="map" aria-label="Interactive World Map"></div>
 
-  <!-- Full-Screen Interactive 3D Earth Globe Container -->
+  <!-- Full-Screen Interactive Realistic 3D Earth Globe Container -->
   <div id="globe-container" aria-label="Interactive 3D Earth Globe">
     <canvas id="globe-canvas"></canvas>
     
@@ -36,10 +36,10 @@
     <div class="globe-hud interactive">
       <div class="globe-hud-pill">
         <span class="hud-status-dot"></span>
-        <span id="globe-coords-hud">35.68° N, 139.65° E</span>
+        <span id="globe-coords-hud">--° N, --° E</span>
       </div>
       <div class="globe-hud-actions">
-        <button id="globe-autorotate-btn" class="globe-ctrl-btn" title="Toggle Auto Rotation">
+        <button id="globe-autorotate-btn" class="globe-ctrl-btn active" title="Toggle Auto Rotation">
           <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
             <path d="M21.5 2v6h-6M21.34 15.57a10 10 0 1 1-.57-8.38l5.67-5.67"/>
           </svg>
@@ -77,11 +77,11 @@
           </svg>
         </div>
         <div class="brand-text">
-          <h1>Weather App <span class="badge-3d">3D FX</span></h1>
+          <h1>Weather App</h1>
         </div>
       </div>
 
-      <!-- Live Search Box with Autocomplete -->
+      <!-- Live Search Box with Autocomplete (Monochrome Black & White) -->
       <div class="search-wrapper">
         <div class="search-box">
           <span class="search-icon">
@@ -124,7 +124,7 @@
         </button>
 
         <!-- Ambient Sound FX Toggle Button -->
-        <button id="audio-fx-btn" class="action-btn audio-toggle-btn" title="Toggle Procedural Weather Soundscape">
+        <button id="audio-fx-btn" class="action-btn audio-toggle-btn" title="Toggle Ambient Weather Audio">
           <svg class="audio-icon-speaker" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
             <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon>
             <path class="audio-wave-1" d="M15.54 8.46a5 5 0 0 1 0 7.07"></path>
@@ -135,7 +135,7 @@
             <span class="bar bar-2"></span>
             <span class="bar bar-3"></span>
           </span>
-          <span id="audio-btn-label">Sound FX</span>
+          <span id="audio-btn-label">Sound</span>
         </button>
 
         <!-- Geolocation Button -->
@@ -178,9 +178,6 @@
 
     <!-- Quick City Preset Chips -->
     <div class="quick-chips-bar interactive">
-      <button class="city-chip" data-lat="35.6762" data-lng="139.6503" data-name="Tokyo" data-country="Japan" data-code="JP">
-        <span>🇯🇵</span> Tokyo
-      </button>
       <button class="city-chip" data-lat="40.7128" data-lng="-74.0060" data-name="New York" data-country="United States" data-code="US">
         <span>🇺🇸</span> New York
       </button>
@@ -189,6 +186,9 @@
       </button>
       <button class="city-chip" data-lat="48.8566" data-lng="2.3522" data-name="Paris" data-country="France" data-code="FR">
         <span>🇫🇷</span> Paris
+      </button>
+      <button class="city-chip" data-lat="35.6762" data-lng="139.6503" data-name="Tokyo" data-country="Japan" data-code="JP">
+        <span>🇯🇵</span> Tokyo
       </button>
       <button class="city-chip" data-lat="25.2048" data-lng="55.2708" data-name="Dubai" data-country="United Arab Emirates" data-code="AE">
         <span>🇦🇪</span> Dubai
@@ -213,21 +213,21 @@
       </button>
     </div>
 
-    <!-- Maximalist Weather Dashboard -->
+    <!-- Weather Dashboard (Monochrome Black & White) -->
     <aside id="main-dashboard" class="main-dashboard interactive" aria-label="Weather Details Dashboard">
       <div class="weather-card">
 
-        <!-- Maximalist Header: Location & Live Clock -->
+        <!-- Header: Location & Live Clock -->
         <div class="weather-card-header">
           <div class="location-meta">
             <div class="location-place">
-              <span id="location-flag" class="location-flag">🇯🇵</span>
-              <h2 id="location-city" class="location-city">Tokyo</h2>
+              <span id="location-flag" class="location-flag">📍</span>
+              <h2 id="location-city" class="location-city">Loading...</h2>
             </div>
             <div class="location-subtitle-row">
-              <span id="location-country" class="location-country-region">Japan</span>
+              <span id="location-country" class="location-country-region">Global Coordinates</span>
               <span class="location-dot">•</span>
-              <span id="location-elevation-badge" class="location-elevation-badge">Elev: 44m</span>
+              <span id="location-elevation-badge" class="location-elevation-badge">Elev: 0m</span>
             </div>
           </div>
 
@@ -254,7 +254,7 @@
         <!-- Scrollable Dashboard Body (Locomotive Scroll Container) -->
         <div id="weather-card-scroll-body" class="weather-card-body" data-scroll-container>
           
-          <!-- Maximalist Hero Section: Temperature & Atmosphere -->
+          <!-- Hero Section: Temperature & Atmosphere (Clean Black & White) -->
           <section class="weather-hero" data-scroll data-scroll-speed="0.6">
             <div class="temp-primary-box">
               <div class="temp-main">
@@ -278,12 +278,12 @@
                 Loading...
               </div>
               <div id="weather-status-tag" class="weather-status-tag">
-                Real-Time 3D Simulation
+                Real-Time Telemetry
               </div>
             </div>
           </section>
 
-          <!-- Maximalist Telemetry Gauges Row (4 Key Environmental Pillars) -->
+          <!-- Telemetry Gauges Row -->
           <div class="telemetry-grid" data-scroll data-scroll-speed="0.8">
             
             <!-- Humidity Gauge -->
@@ -299,12 +299,11 @@
               <span id="humidity-status" class="telemetry-sub">Optimal Comfort</span>
             </div>
 
-            <!-- Wind Gauge with 3D Gyroscopic Compass Widget -->
-            <div class="telemetry-card wind-telemetry-card" title="Wind Velocity & 3D Vector Compass">
+            <!-- Wind Gauge with Compass Gyroscope -->
+            <div class="telemetry-card wind-telemetry-card" title="Wind Velocity & Vector">
               <div class="telemetry-head">
                 <span class="telemetry-icon">💨</span>
                 <span class="telemetry-title">Wind Vector</span>
-                <span class="badge-micro-3d">3D Gyro</span>
               </div>
               <div class="wind-telemetry-content">
                 <div class="wind-data-left">
@@ -312,7 +311,7 @@
                   <span id="wind-direction-sub" class="telemetry-sub">-- Direction</span>
                 </div>
                 <div class="wind-compass-3d-wrapper">
-                  <canvas id="wind-3d-compass-canvas" width="64" height="64"></canvas>
+                  <canvas id="wind-3d-compass-canvas" width="52" height="52"></canvas>
                 </div>
               </div>
               <div class="telemetry-bar-wrap">
@@ -356,9 +355,9 @@
                   <circle cx="12" cy="12" r="10"></circle>
                   <polyline points="12 6 12 12 16 14"></polyline>
                 </svg>
-                Hourly Forecast (24h)
+                Hourly Breakdown (24h)
               </span>
-              <span class="section-badge">Live Radar</span>
+              <span class="section-badge">Forecast</span>
             </div>
             <div id="hourly-forecast-container" class="hourly-scroll-container">
               <!-- Hourly Cards Injected Dynamically -->
@@ -377,14 +376,14 @@
                 </svg>
                 7-Day Outlook
               </span>
-              <span class="section-badge">Thermal Range</span>
+              <span class="section-badge">Range</span>
             </div>
             <div id="daily-forecast-container" class="daily-forecast-list">
               <!-- Daily Forecast Rows Injected -->
             </div>
           </section>
 
-          <!-- Sun & Daylight Solar Arc with 3D Celestial Solar/Moon Sphere -->
+          <!-- Sun & Daylight Solar Arc -->
           <section class="section-block solar-section-block" data-scroll data-scroll-speed="1.1" id="solar-section">
             <div class="section-header">
               <span class="section-title">
@@ -398,7 +397,7 @@
                   <path d="m6.34 17.66-1.41 1.41"></path>
                   <path d="m19.07 4.93-1.41 1.41"></path>
                 </svg>
-                Solar Cycle & 3D Celestial Arc
+                Solar Cycle & Daylight Arc
               </span>
               <span id="daylight-duration-badge" class="section-badge">-- hrs daylight</span>
             </div>
@@ -412,7 +411,7 @@
                 </div>
               </div>
 
-              <!-- 3D Celestial Solar Arc Visualizer -->
+              <!-- Celestial Solar Arc Visualizer -->
               <div class="solar-arc-track">
                 <canvas id="solar-3d-canvas" class="solar-3d-canvas" width="220" height="74"></canvas>
                 <div class="solar-arc-line"></div>
@@ -429,7 +428,7 @@
             </div>
           </section>
 
-          <!-- Extended Telemetry & Atmospheric Physics -->
+          <!-- Extended Telemetry & Atmospheric Details -->
           <section class="section-block" data-scroll data-scroll-speed="1.2">
             <div class="section-header">
               <span class="section-title">

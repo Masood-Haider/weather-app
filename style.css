@@ -1,41 +1,28 @@
 /* ==========================================================================
-   WEATHER APP - 3D METEOROLOGICAL ENGINE & LOCOMOTIVE SCROLL DESIGN SYSTEM
+   WEATHER APP - MODERN MONOCHROME (BLACK & WHITE) DESIGN SYSTEM
    ========================================================================== */
 
 :root {
-  /* Maximalist Palette */
-  --bg-app: #060a10;
-  --bg-surface: rgba(15, 23, 36, 0.82);
-  --bg-surface-elevated: rgba(21, 34, 51, 0.88);
-  --bg-surface-highlight: #1b2c42;
-  --bg-surface-hover: #223752;
-  --bg-subtle: #1a2a3e;
+  /* Strict Monochrome Palette */
+  --bg-app: #000000;
+  --bg-surface: rgba(14, 14, 14, 0.86);
+  --bg-surface-elevated: rgba(22, 22, 22, 0.92);
+  --bg-surface-highlight: #262626;
+  --bg-surface-hover: #303030;
+  --bg-subtle: #1c1c1c;
 
-  --text-primary: #f8fafc;
-  --text-secondary: #94a3b8;
-  --text-muted: #64748b;
+  --text-primary: #ffffff;
+  --text-secondary: #a3a3a3;
+  --text-muted: #737373;
 
-  --accent-emerald: #10b981;
-  --accent-mint: #34d399;
-  --accent-teal: #06b6d4;
-  --accent-cyan: #38bdf8;
-  --accent-amber: #f59e0b;
-  --accent-gold: #fbbf24;
-  --accent-rose: #f43f5e;
-  --accent-purple: #a855f7;
-  --accent-electric: #818cf8;
+  --border-subtle: rgba(255, 255, 255, 0.08);
+  --border-card: rgba(255, 255, 255, 0.15);
+  --border-focus: #ffffff;
+  --border-bright: rgba(255, 255, 255, 0.4);
 
-  --border-subtle: rgba(30, 48, 70, 0.8);
-  --border-card: rgba(37, 59, 86, 0.85);
-  --border-focus: #10b981;
-  --border-bright: rgba(52, 211, 153, 0.45);
-  --border-glass: rgba(255, 255, 255, 0.12);
-
-  --shadow-card: 0 16px 36px -4px rgba(0, 0, 0, 0.65), 0 4px 14px -2px rgba(0, 0, 0, 0.45);
-  --shadow-popover: 0 24px 48px -5px rgba(0, 0, 0, 0.75);
-  --shadow-glow-mint: 0 0 24px rgba(52, 211, 153, 0.35);
-  --shadow-glow-cyan: 0 0 24px rgba(6, 182, 212, 0.35);
-  --shadow-glow-gold: 0 0 24px rgba(245, 158, 11, 0.35);
+  --shadow-card: 0 16px 36px -4px rgba(0, 0, 0, 0.8), 0 4px 14px -2px rgba(0, 0, 0, 0.6);
+  --shadow-popover: 0 24px 48px -5px rgba(0, 0, 0, 0.9);
+  --shadow-glow-white: 0 0 20px rgba(255, 255, 255, 0.25);
 
   --radius-sm: 6px;
   --radius-md: 10px;
@@ -70,35 +57,6 @@ html, body {
   position: relative;
 }
 
-/* Dynamic Atmospheric Weather Background Lighting Themes */
-body::before {
-  content: '';
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100vw;
-  height: 100vh;
-  pointer-events: none;
-  z-index: 0;
-  transition: background 1.2s ease;
-}
-
-body.theme-clear::before {
-  background: radial-gradient(circle at 75% 20%, rgba(251, 191, 36, 0.12) 0%, transparent 65%);
-}
-
-body.theme-rain::before {
-  background: radial-gradient(circle at 50% 30%, rgba(6, 182, 212, 0.14) 0%, transparent 70%);
-}
-
-body.theme-snow::before {
-  background: radial-gradient(circle at 50% 30%, rgba(186, 230, 253, 0.15) 0%, transparent 70%);
-}
-
-body.theme-thunder::before {
-  background: radial-gradient(circle at 60% 25%, rgba(168, 85, 247, 0.18) 0%, transparent 75%);
-}
-
 /* 3D Atmospheric Weather FX Fullscreen Canvas */
 #weather-fx-canvas {
   position: absolute;
@@ -120,7 +78,7 @@ body.theme-thunder::before {
   width: 100vw;
   height: 100vh;
   z-index: 1;
-  background: #090e16;
+  background: #000000;
   transition: opacity 0.5s ease, filter 0.5s ease;
 }
 
@@ -129,7 +87,7 @@ body.view-3d-mode #map {
   pointer-events: none;
 }
 
-/* Fullscreen 3D Earth Globe Container */
+/* Fullscreen Realistic 3D Earth Globe Container */
 #globe-container {
   position: absolute;
   top: 0;
@@ -137,7 +95,7 @@ body.view-3d-mode #map {
   width: 100vw;
   height: 100vh;
   z-index: 2;
-  background: radial-gradient(circle at 50% 50%, #0c1626 0%, #03060a 100%);
+  background: #000000;
   opacity: 0;
   visibility: hidden;
   transition: opacity 0.6s cubic-bezier(0.16, 1, 0.3, 1), visibility 0.6s;
@@ -185,7 +143,7 @@ body.view-3d-mode #globe-container {
   font-family: var(--font-mono);
   font-size: 12px;
   font-weight: 600;
-  color: var(--accent-mint);
+  color: #ffffff;
   box-shadow: var(--shadow-card);
 }
 
@@ -193,8 +151,8 @@ body.view-3d-mode #globe-container {
   width: 8px;
   height: 8px;
   border-radius: 50%;
-  background: var(--accent-mint);
-  box-shadow: 0 0 10px var(--accent-mint);
+  background: #ffffff;
+  box-shadow: 0 0 10px #ffffff;
   animation: pulse-dot 2s infinite ease-in-out;
 }
 
@@ -230,14 +188,14 @@ body.view-3d-mode #globe-container {
 
 .globe-ctrl-btn:hover {
   background: var(--bg-surface-hover);
-  border-color: var(--accent-mint);
-  color: var(--accent-mint);
+  border-color: #ffffff;
+  color: #ffffff;
 }
 
 .globe-ctrl-btn.active {
-  background: var(--accent-mint);
-  color: #060a10;
-  border-color: var(--accent-mint);
+  background: #ffffff;
+  color: #000000;
+  border-color: #ffffff;
   font-weight: 700;
 }
 
@@ -273,11 +231,11 @@ body.view-3d-mode #globe-container {
 
 .leaflet-control-zoom a:hover {
   background: var(--bg-surface-hover) !important;
-  color: var(--accent-mint) !important;
+  color: #ffffff !important;
 }
 
 .leaflet-control-attribution {
-  background: rgba(15, 24, 36, 0.85) !important;
+  background: rgba(10, 10, 10, 0.88) !important;
   color: var(--text-muted) !important;
   border-radius: 4px;
   margin-bottom: 6px !important;
@@ -287,11 +245,11 @@ body.view-3d-mode #globe-container {
 }
 
 .leaflet-control-attribution a {
-  color: var(--accent-mint) !important;
+  color: #ffffff !important;
   text-decoration: none;
 }
 
-/* Custom Animated Map Marker */
+/* Custom Animated Map Marker (Monochrome) */
 .custom-pin-marker {
   position: relative;
   width: 44px;
@@ -304,10 +262,10 @@ body.view-3d-mode #globe-container {
 .pin-core {
   width: 14px;
   height: 14px;
-  background: var(--accent-mint);
-  border: 2.5px solid #ffffff;
+  background: #ffffff;
+  border: 2.5px solid #000000;
   border-radius: 50%;
-  box-shadow: 0 0 16px rgba(52, 211, 153, 0.9);
+  box-shadow: 0 0 16px rgba(255, 255, 255, 0.95);
   z-index: 2;
   transition: transform 0.2s ease;
 }
@@ -317,7 +275,7 @@ body.view-3d-mode #globe-container {
   width: 38px;
   height: 38px;
   border-radius: 50%;
-  background: rgba(52, 211, 153, 0.45);
+  background: rgba(255, 255, 255, 0.4);
   animation: marker-pulse 2s infinite cubic-bezier(0.2, 0.8, 0.2, 1);
   z-index: 1;
 }
@@ -379,7 +337,7 @@ body.view-3d-mode #globe-container {
 
 .brand-badge:hover {
   background: var(--bg-surface-hover);
-  border-color: var(--accent-mint);
+  border-color: #ffffff;
 }
 
 .brand-icon {
@@ -387,9 +345,9 @@ body.view-3d-mode #globe-container {
   height: 28px;
   display: grid;
   place-items: center;
-  background: linear-gradient(135deg, var(--accent-mint), var(--accent-emerald));
+  background: #ffffff;
   border-radius: var(--radius-sm);
-  color: #080d14;
+  color: #000000;
 }
 
 .brand-text h1 {
@@ -398,24 +356,9 @@ body.view-3d-mode #globe-container {
   font-weight: 800;
   letter-spacing: -0.01em;
   color: var(--text-primary);
-  display: flex;
-  align-items: center;
-  gap: 6px;
 }
 
-.badge-3d {
-  font-size: 10px;
-  font-family: var(--font-mono);
-  font-weight: 800;
-  background: linear-gradient(135deg, var(--accent-cyan), var(--accent-electric));
-  color: #ffffff;
-  padding: 2px 6px;
-  border-radius: 4px;
-  text-shadow: 0 1px 2px rgba(0,0,0,0.5);
-  box-shadow: 0 0 10px rgba(56, 189, 248, 0.4);
-}
-
-/* Search Box */
+/* Search Box (Monochrome Black & White) */
 .search-wrapper {
   position: relative;
   flex: 1;
@@ -425,10 +368,10 @@ body.view-3d-mode #globe-container {
 .search-box {
   display: flex;
   align-items: center;
-  background: var(--bg-surface);
+  background: #0d0d0d;
   backdrop-filter: blur(20px);
   -webkit-backdrop-filter: blur(20px);
-  border: 1px solid var(--border-card);
+  border: 1px solid rgba(255, 255, 255, 0.18);
   border-radius: var(--radius-md);
   padding: 8px 16px;
   box-shadow: var(--shadow-card);
@@ -436,13 +379,13 @@ body.view-3d-mode #globe-container {
 }
 
 .search-box:focus-within {
-  border-color: var(--accent-mint);
-  background: var(--bg-surface-elevated);
-  box-shadow: var(--shadow-glow-mint);
+  border-color: #ffffff;
+  background: #141414;
+  box-shadow: var(--shadow-glow-white);
 }
 
 .search-icon {
-  color: var(--text-muted);
+  color: #ffffff;
   display: flex;
   align-items: center;
   margin-right: 10px;
@@ -456,7 +399,7 @@ body.view-3d-mode #globe-container {
   font-family: var(--font-body);
   font-size: 14px;
   font-weight: 500;
-  color: var(--text-primary);
+  color: #ffffff;
 }
 
 .search-input::placeholder {
@@ -478,15 +421,15 @@ body.view-3d-mode #globe-container {
 }
 
 .search-clear-btn:hover {
-  color: var(--text-primary);
+  color: #ffffff;
 }
 
 .search-shortcut {
   font-size: 11px;
   font-weight: 700;
-  color: var(--text-muted);
-  background: var(--bg-surface-highlight);
-  border: 1px solid var(--border-subtle);
+  color: #a3a3a3;
+  background: #1f1f1f;
+  border: 1px solid rgba(255, 255, 255, 0.15);
   padding: 2px 6px;
   border-radius: 4px;
   margin-left: 8px;
@@ -499,7 +442,7 @@ body.view-3d-mode #globe-container {
   top: calc(100% + 8px);
   left: 0;
   width: 100%;
-  background: var(--bg-surface-elevated);
+  background: #111111;
   backdrop-filter: blur(24px);
   -webkit-backdrop-filter: blur(24px);
   border: 1px solid var(--border-card);
@@ -554,7 +497,7 @@ body.view-3d-mode #globe-container {
 .result-name {
   font-size: 14px;
   font-weight: 700;
-  color: var(--text-primary);
+  color: #ffffff;
 }
 
 .result-country {
@@ -609,27 +552,20 @@ body.view-3d-mode #globe-container {
 
 .action-btn:hover {
   background: var(--bg-surface-hover);
-  border-color: var(--accent-mint);
-  color: var(--accent-mint);
+  border-color: #ffffff;
+  color: #ffffff;
 }
 
 /* View Mode Button */
 .mode-toggle-btn {
-  background: linear-gradient(135deg, rgba(6, 182, 212, 0.15), rgba(168, 85, 247, 0.15));
-  border-color: rgba(6, 182, 212, 0.4);
-}
-
-.mode-toggle-btn:hover {
-  background: linear-gradient(135deg, rgba(6, 182, 212, 0.25), rgba(168, 85, 247, 0.25));
-  border-color: var(--accent-teal);
-  color: var(--accent-teal);
+  background: var(--bg-surface);
 }
 
 body.view-3d-mode .mode-toggle-btn {
-  background: linear-gradient(135deg, var(--accent-teal), var(--accent-purple));
-  color: #ffffff;
-  border-color: transparent;
-  box-shadow: 0 0 16px rgba(6, 182, 212, 0.4);
+  background: #ffffff;
+  color: #000000;
+  border-color: #ffffff;
+  font-weight: 700;
 }
 
 /* Audio FX Toggle Button */
@@ -655,7 +591,7 @@ body.view-3d-mode .mode-toggle-btn {
 }
 
 .audio-toggle-btn.active .sound-wave-bars .bar {
-  background: var(--accent-mint);
+  background: #ffffff;
   animation: sound-equalizer 0.8s infinite ease-in-out alternate;
 }
 
@@ -671,7 +607,7 @@ body.view-3d-mode .mode-toggle-btn {
 .unit-btn {
   min-width: 44px;
   font-weight: 800;
-  color: var(--accent-mint);
+  color: #ffffff;
 }
 
 /* Map Layer Switcher Dropdown */
@@ -679,7 +615,7 @@ body.view-3d-mode .mode-toggle-btn {
   position: absolute;
   top: 58px;
   right: 22px;
-  background: var(--bg-surface-elevated);
+  background: #111111;
   backdrop-filter: blur(24px);
   -webkit-backdrop-filter: blur(24px);
   border: 1px solid var(--border-card);
@@ -715,12 +651,12 @@ body.view-3d-mode .mode-toggle-btn {
 
 .layer-option-btn:hover {
   background: var(--bg-surface-hover);
-  color: var(--text-primary);
+  color: #ffffff;
 }
 
 .layer-option-btn.active {
-  background: var(--bg-surface-highlight);
-  color: var(--accent-mint);
+  background: #ffffff;
+  color: #000000;
   font-weight: 700;
 }
 
@@ -760,13 +696,13 @@ body.view-3d-mode .mode-toggle-btn {
 
 .city-chip:hover {
   background: var(--bg-surface-hover);
-  border-color: var(--accent-mint);
-  color: var(--text-primary);
+  border-color: #ffffff;
+  color: #ffffff;
   transform: translateY(-1px);
 }
 
 /* ==========================================================================
-   MAXIMALIST WEATHER DASHBOARD CARD WITH LOCOMOTIVE SCROLL
+   MONOCHROME WEATHER DASHBOARD CARD
    ========================================================================== */
 
 .main-dashboard {
@@ -810,15 +746,15 @@ body.view-3d-mode .mode-toggle-btn {
 
 .dashboard-toggle-btn:hover {
   background: var(--bg-surface-hover);
-  color: var(--accent-mint);
-  box-shadow: var(--shadow-glow-mint);
+  color: #ffffff;
+  border-color: #ffffff;
 }
 
 .main-dashboard.collapsed + .dashboard-toggle-btn {
   display: flex;
 }
 
-/* Maximalist Card Container */
+/* Card Container */
 .weather-card {
   flex: 1;
   background: var(--bg-surface);
@@ -864,7 +800,7 @@ body.view-3d-mode .mode-toggle-btn {
   font-family: var(--font-heading);
   font-size: 22px;
   font-weight: 800;
-  color: var(--text-primary);
+  color: #ffffff;
   line-height: 1.1;
 }
 
@@ -882,7 +818,7 @@ body.view-3d-mode .mode-toggle-btn {
 
 .location-elevation-badge {
   font-size: 11px;
-  color: var(--accent-mint);
+  color: #ffffff;
   font-weight: 600;
   font-family: var(--font-mono);
 }
@@ -898,7 +834,7 @@ body.view-3d-mode .mode-toggle-btn {
   font-family: var(--font-heading);
   font-size: 19px;
   font-weight: 800;
-  color: var(--accent-mint);
+  color: #ffffff;
   font-variant-numeric: tabular-nums;
   letter-spacing: -0.01em;
 }
@@ -918,9 +854,9 @@ body.view-3d-mode .mode-toggle-btn {
 
 .timezone-pill {
   font-size: 10px;
-  background: var(--bg-surface-highlight);
-  color: var(--accent-mint);
-  border: 1px solid var(--border-subtle);
+  background: #242424;
+  color: #ffffff;
+  border: 1px solid var(--border-card);
   padding: 1px 6px;
   border-radius: 4px;
   font-weight: 700;
@@ -949,10 +885,10 @@ body.view-3d-mode .mode-toggle-btn {
 
 .card-ctrl-btn:hover {
   background: var(--bg-surface-hover);
-  color: var(--text-primary);
+  color: #ffffff;
 }
 
-/* Card Scrollable Body (Locomotive Scroll Ready) */
+/* Card Scrollable Body */
 .weather-card-body {
   flex: 1;
   overflow-y: auto;
@@ -974,7 +910,7 @@ body.view-3d-mode .mode-toggle-btn {
   border-radius: 4px;
 }
 
-/* Maximalist Hero Section */
+/* Hero Section (Pure Black & White) */
 .weather-hero {
   display: flex;
   align-items: center;
@@ -984,7 +920,7 @@ body.view-3d-mode .mode-toggle-btn {
   border: 1px solid var(--border-card);
   border-radius: var(--radius-lg);
   padding: 16px 18px;
-  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.25);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.5);
   transition: transform 0.2s ease;
 }
 
@@ -1002,17 +938,17 @@ body.view-3d-mode .mode-toggle-btn {
 
 #temp-value {
   font-family: var(--font-heading);
-  font-size: 52px;
+  font-size: 54px;
   font-weight: 900;
   letter-spacing: -0.03em;
-  color: var(--text-primary);
+  color: #ffffff;
 }
 
 .temp-unit-symbol {
   font-family: var(--font-heading);
   font-size: 24px;
   font-weight: 700;
-  color: var(--accent-mint);
+  color: #ffffff;
   margin-left: 2px;
 }
 
@@ -1025,7 +961,7 @@ body.view-3d-mode .mode-toggle-btn {
 .temp-apparent {
   font-size: 13px;
   font-weight: 600;
-  color: var(--text-secondary);
+  color: #a3a3a3;
 }
 
 .temp-high-low-badge {
@@ -1037,11 +973,11 @@ body.view-3d-mode .mode-toggle-btn {
 }
 
 .temp-high-low-badge .high {
-  color: var(--accent-rose);
+  color: #ffffff;
 }
 
 .temp-high-low-badge .low {
-  color: var(--accent-teal);
+  color: #a3a3a3;
 }
 
 .weather-hero-right {
@@ -1058,14 +994,14 @@ body.view-3d-mode .mode-toggle-btn {
   display: flex;
   align-items: center;
   justify-content: center;
-  filter: drop-shadow(0 4px 12px rgba(52, 211, 153, 0.3));
+  filter: drop-shadow(0 4px 12px rgba(255, 255, 255, 0.2));
 }
 
 .weather-condition-title {
   font-family: var(--font-heading);
   font-size: 16px;
   font-weight: 700;
-  color: var(--text-primary);
+  color: #ffffff;
 }
 
 .weather-status-tag {
@@ -1073,14 +1009,14 @@ body.view-3d-mode .mode-toggle-btn {
   font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 0.04em;
-  color: var(--accent-mint);
-  background: rgba(52, 211, 153, 0.12);
-  border: 1px solid rgba(52, 211, 153, 0.3);
+  color: #ffffff;
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.2);
   padding: 2px 8px;
   border-radius: var(--radius-full);
 }
 
-/* Maximalist Telemetry Gauges */
+/* Telemetry Gauges */
 .telemetry-grid {
   display: grid;
   grid-template-columns: repeat(2, 1fr);
@@ -1095,12 +1031,12 @@ body.view-3d-mode .mode-toggle-btn {
   display: flex;
   flex-direction: column;
   gap: 6px;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
   transition: transform 0.2s ease, border-color 0.2s ease;
 }
 
 .telemetry-card:hover {
-  border-color: var(--border-bright);
+  border-color: #ffffff;
   transform: translateY(-2px);
 }
 
@@ -1110,26 +1046,14 @@ body.view-3d-mode .mode-toggle-btn {
   gap: 6px;
   font-size: 12px;
   font-weight: 600;
-  color: var(--text-secondary);
-}
-
-.badge-micro-3d {
-  margin-left: auto;
-  font-size: 9px;
-  font-family: var(--font-mono);
-  font-weight: 700;
-  background: rgba(6, 182, 212, 0.2);
-  color: var(--accent-teal);
-  border: 1px solid rgba(6, 182, 212, 0.4);
-  padding: 1px 4px;
-  border-radius: 3px;
+  color: #a3a3a3;
 }
 
 .telemetry-val {
   font-family: var(--font-heading);
   font-size: 20px;
   font-weight: 800;
-  color: var(--text-primary);
+  color: #ffffff;
   line-height: 1.1;
 }
 
@@ -1145,13 +1069,9 @@ body.view-3d-mode .mode-toggle-btn {
 .telemetry-bar-fill {
   height: 100%;
   border-radius: var(--radius-full);
+  background: linear-gradient(90deg, #ffffff, #888888);
   transition: width 0.6s cubic-bezier(0.16, 1, 0.3, 1);
 }
-
-.humidity-fill { background: linear-gradient(90deg, #06b6d4, #34d399); }
-.wind-fill { background: linear-gradient(90deg, #38bdf8, #818cf8); }
-.uv-fill { background: linear-gradient(90deg, #fbbf24, #f43f5e); }
-.precip-fill { background: linear-gradient(90deg, #38bdf8, #0ea5e9); }
 
 .telemetry-sub {
   font-size: 11px;
@@ -1159,7 +1079,7 @@ body.view-3d-mode .mode-toggle-btn {
   font-weight: 500;
 }
 
-/* 3D Wind Telemetry Card & Compass Gyroscope */
+/* Wind Telemetry Content & Compass */
 .wind-telemetry-content {
   display: flex;
   align-items: center;
@@ -1199,7 +1119,7 @@ body.view-3d-mode .mode-toggle-btn {
   gap: 6px;
   font-size: 13px;
   font-weight: 700;
-  color: var(--text-primary);
+  color: #ffffff;
   text-transform: uppercase;
   letter-spacing: 0.02em;
 }
@@ -1214,7 +1134,7 @@ body.view-3d-mode .mode-toggle-btn {
   border-radius: var(--radius-full);
 }
 
-/* Hourly Breakdown Horizontal Scroll Container */
+/* Hourly Forecast Horizontal Scroll */
 .hourly-scroll-container {
   display: flex;
   gap: 8px;
@@ -1248,13 +1168,13 @@ body.view-3d-mode .mode-toggle-btn {
 
 .hourly-card:hover {
   transform: translateY(-2px);
-  border-color: var(--border-bright);
+  border-color: #ffffff;
 }
 
 .hourly-card.active {
-  border-color: var(--accent-mint);
+  border-color: #ffffff;
   background: var(--bg-surface-highlight);
-  box-shadow: 0 0 12px rgba(52, 211, 153, 0.25);
+  box-shadow: 0 0 12px rgba(255, 255, 255, 0.2);
 }
 
 .hourly-time {
@@ -1274,16 +1194,16 @@ body.view-3d-mode .mode-toggle-btn {
   font-family: var(--font-heading);
   font-size: 14px;
   font-weight: 800;
-  color: var(--text-primary);
+  color: #ffffff;
 }
 
 .hourly-pop {
   font-size: 10px;
   font-weight: 600;
-  color: var(--accent-teal);
+  color: #a3a3a3;
 }
 
-/* 7-Day Extended Forecast List */
+/* 7-Day Extended Forecast */
 .daily-forecast-list {
   display: flex;
   flex-direction: column;
@@ -1303,14 +1223,14 @@ body.view-3d-mode .mode-toggle-btn {
 
 .daily-item:hover {
   background: var(--bg-surface-hover);
-  border-color: var(--border-bright);
+  border-color: #ffffff;
 }
 
 .daily-day {
   width: 50px;
   font-size: 13px;
   font-weight: 600;
-  color: var(--text-primary);
+  color: #ffffff;
 }
 
 .daily-icon {
@@ -1337,7 +1257,7 @@ body.view-3d-mode .mode-toggle-btn {
 .temp-bar-fill {
   position: absolute;
   height: 100%;
-  background: linear-gradient(90deg, var(--accent-teal), var(--accent-amber));
+  background: linear-gradient(90deg, #ffffff, #737373);
   border-radius: var(--radius-full);
 }
 
@@ -1353,9 +1273,9 @@ body.view-3d-mode .mode-toggle-btn {
 }
 
 .daily-temp-extremes .min { color: var(--text-muted); }
-.daily-temp-extremes .max { color: var(--text-primary); }
+.daily-temp-extremes .max { color: #ffffff; }
 
-/* Sun & Daylight Cycle Card with 3D Celestial Solar Arc */
+/* Sun & Daylight Cycle Card */
 .sun-cycle-box {
   background: var(--bg-surface-elevated);
   border: 1px solid var(--border-card);
@@ -1395,7 +1315,7 @@ body.view-3d-mode .mode-toggle-btn {
   font-family: var(--font-heading);
   font-size: 13px;
   font-weight: 800;
-  color: var(--text-primary);
+  color: #ffffff;
 }
 
 .solar-arc-track {
@@ -1422,7 +1342,7 @@ body.view-3d-mode .mode-toggle-btn {
   position: absolute;
   width: 80%;
   height: 40px;
-  border-top: 2px dashed rgba(251, 191, 36, 0.4);
+  border-top: 2px dashed rgba(255, 255, 255, 0.4);
   border-radius: 50% 50% 0 0 / 100% 100% 0 0;
   top: 15px;
 }
@@ -1431,16 +1351,16 @@ body.view-3d-mode .mode-toggle-btn {
   position: absolute;
   width: 10px;
   height: 10px;
-  background: var(--accent-gold);
+  background: #ffffff;
   border-radius: 50%;
-  box-shadow: 0 0 12px var(--accent-gold);
+  box-shadow: 0 0 12px #ffffff;
   top: 10px;
   left: 50%;
   transform: translate(-50%, 0);
   transition: all 0.5s ease;
 }
 
-/* Atmospheric Telemetry Details Grid */
+/* Atmospheric Details Grid */
 .details-grid {
   display: grid;
   grid-template-columns: repeat(2, 1fr);
@@ -1470,7 +1390,7 @@ body.view-3d-mode .mode-toggle-btn {
   font-family: var(--font-heading);
   font-size: 15px;
   font-weight: 800;
-  color: var(--text-primary);
+  color: #ffffff;
 }
 
 .detail-card-val.coords-val {
@@ -1497,11 +1417,11 @@ body.view-3d-mode .mode-toggle-btn {
 }
 
 .toast-msg {
-  background: rgba(15, 24, 36, 0.94);
+  background: rgba(18, 18, 18, 0.95);
   backdrop-filter: blur(16px);
   -webkit-backdrop-filter: blur(16px);
-  border: 1px solid var(--border-card);
-  color: var(--text-primary);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  color: #ffffff;
   padding: 10px 18px;
   border-radius: var(--radius-full);
   font-size: 13px;
@@ -1533,10 +1453,7 @@ body.view-3d-mode .mode-toggle-btn {
   100% { transform: rotate(360deg); }
 }
 
-/* ==========================================================================
-   RESPONSIVE LAYOUT
-   ========================================================================== */
-
+/* Responsive */
 @media (max-width: 960px) {
   .app-overlay {
     padding: 12px 14px;
