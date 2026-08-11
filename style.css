@@ -1509,6 +1509,14 @@ body.view-3d-mode .mode-toggle-btn {
 @media (max-width: 1024px) {
   .hud-sheet-header {
     display: flex;
+    position: sticky;
+    top: 0;
+    z-index: 25;
+    background: rgba(12, 12, 12, 0.95);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    padding-top: 4px;
+    margin-top: -4px;
   }
 
   .hud-spaces-container {
@@ -1519,25 +1527,30 @@ body.view-3d-mode .mode-toggle-btn {
     right: 0;
     height: 50vh;
     max-height: 50vh;
-    overflow-y: auto;
-    overflow-x: hidden;
+    overflow-y: auto !important;
+    overflow-x: hidden !important;
     pointer-events: auto;
-    padding: 10px 14px calc(14px + env(safe-area-inset-bottom, 0px)) 14px;
+    padding: 10px 14px calc(28px + env(safe-area-inset-bottom, 12px)) 14px;
     display: flex;
     flex-direction: column;
-    gap: 10px;
+    gap: 12px;
     scrollbar-width: thin;
     scrollbar-color: rgba(255, 255, 255, 0.25) transparent;
-    -webkit-overflow-scrolling: touch;
+    -webkit-overflow-scrolling: touch !important;
+    overscroll-behavior-y: contain;
+    scroll-behavior: smooth;
+    touch-action: pan-y;
     z-index: 35;
-    background: linear-gradient(180deg, rgba(12, 12, 12, 0.92) 0%, rgba(0, 0, 0, 0.98) 100%);
+    background: linear-gradient(180deg, rgba(12, 12, 12, 0.94) 0%, rgba(0, 0, 0, 0.98) 100%);
     backdrop-filter: blur(24px);
     -webkit-backdrop-filter: blur(24px);
     border-top: 1px solid var(--border-card);
     border-top-left-radius: 20px;
     border-top-right-radius: 20px;
     box-shadow: 0 -8px 36px rgba(0, 0, 0, 0.85);
-    transition: height 0.4s cubic-bezier(0.16, 1, 0.3, 1), max-height 0.4s cubic-bezier(0.16, 1, 0.3, 1), padding 0.4s ease;
+    transition: height 0.35s cubic-bezier(0.16, 1, 0.3, 1), max-height 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+    transform: translate3d(0, 0, 0);
+    will-change: height, max-height, transform, scroll-position;
   }
 
   /* State 1: Retracted / Collapsed Bottom Mini Dock State (Full 100% Globe View) */
@@ -1585,11 +1598,11 @@ body.view-3d-mode .mode-toggle-btn {
 
   /* State 3: Fullscreen (Covers the whole screen) */
   .hud-spaces-container.sheet-fullscreen {
-    height: calc(100vh - 72px) !important;
-    max-height: calc(100vh - 72px) !important;
+    height: calc(100vh - 65px) !important;
+    max-height: calc(100vh - 65px) !important;
     overflow-y: auto !important;
-    border-top-left-radius: 24px;
-    border-top-right-radius: 24px;
+    border-top-left-radius: 22px;
+    border-top-right-radius: 22px;
     box-shadow: 0 -12px 48px rgba(0, 0, 0, 0.95);
   }
 
@@ -1605,6 +1618,7 @@ body.view-3d-mode .mode-toggle-btn {
     box-sizing: border-box;
     overflow: visible !important;
     height: auto !important;
+    max-height: none !important;
   }
 
   .hud-left-pod .hud-pod-inner {
@@ -1612,16 +1626,26 @@ body.view-3d-mode .mode-toggle-btn {
     overflow: visible;
   }
 
+  .hud-right-scroll {
+    height: auto !important;
+    max-height: none !important;
+    overflow: visible !important;
+    padding: 0 !important;
+  }
+
   .hud-bottom-deck {
     display: grid;
     grid-template-columns: repeat(2, 1fr);
     gap: 8px;
     max-width: 100%;
+    height: auto !important;
+    overflow: visible !important;
   }
 
   .hud-right-pod {
-    height: auto;
-    max-height: none;
+    height: auto !important;
+    max-height: none !important;
+    overflow: visible !important;
   }
   
   .globe-hud {
@@ -1633,7 +1657,7 @@ body.view-3d-mode .mode-toggle-btn {
     width: auto;
     justify-content: space-between;
     z-index: 40;
-    transition: bottom 0.4s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.3s ease;
+    transition: bottom 0.35s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.25s ease;
   }
 
   .hud-spaces-container.sheet-fullscreen ~ .globe-hud,
