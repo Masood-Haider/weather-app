@@ -97,7 +97,7 @@
             <line x1="2" y1="12" x2="22" y2="12"></line>
             <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"></path>
           </svg>
-          <span id="view-mode-label">2D Map</span>
+          <span id="view-mode-label" class="action-label">2D Map</span>
         </button>
 
         <!-- Ambient Sound FX Toggle Button -->
@@ -112,7 +112,7 @@
             <span class="bar bar-2"></span>
             <span class="bar bar-3"></span>
           </span>
-          <span id="audio-btn-label">Sound</span>
+          <span id="audio-btn-label" class="action-label">Sound</span>
         </button>
 
         <!-- Geolocation Button -->
@@ -157,6 +157,7 @@
          COMPACT DIVIDED HUD SPACES (LEFT POD, BOTTOM DECK, RIGHT POD, GLOBE HUD)
          ========================================================================== -->
     <div id="main-dashboard" class="hud-spaces-container">
+      <div class="hud-sheet-drag-handle" aria-hidden="true"></div>
       
       <!-- 1. LEFT COMPACT HUD POD: LOCATION, TIME & CURRENT WEATHER -->
       <aside id="hud-left-pod" class="hud-pod hud-left-pod interactive" aria-label="Current Weather and Location">

@@ -594,6 +594,9 @@ const ThreeGlobe = (function() {
     scene = new THREE.Scene();
     camera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 0.1, 1000);
     camera.position.set(0, 0, 15);
+    if (window.innerWidth <= 768) {
+      camera.setViewOffset(window.innerWidth, window.innerHeight, 0, -window.innerHeight * 0.14, window.innerWidth, window.innerHeight);
+    }
 
     renderer = new THREE.WebGLRenderer({ canvas, antialias: true, alpha: true });
     renderer.setSize(window.innerWidth, window.innerHeight);
@@ -939,9 +942,16 @@ const ThreeGlobe = (function() {
 
   function onResize() {
     if (!camera || !renderer) return;
-    camera.aspect = window.innerWidth / window.innerHeight;
+    const w = window.innerWidth;
+    const h = window.innerHeight;
+    camera.aspect = w / h;
+    if (w <= 768) {
+      camera.setViewOffset(w, h, 0, -h * 0.14, w, h);
+    } else {
+      camera.clearViewOffset();
+    }
     camera.updateProjectionMatrix();
-    renderer.setSize(window.innerWidth, window.innerHeight);
+    renderer.setSize(w, h);
   }
 
   return { init, updatePinLocation, flyTo, toggleAutoRotate };

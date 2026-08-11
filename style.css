@@ -1376,8 +1376,18 @@ body.view-3d-mode .mode-toggle-btn {
   to { opacity: 1; transform: translateY(0) scale(1); }
 }
 
+.hud-sheet-drag-handle {
+  display: none;
+  width: 38px;
+  height: 4px;
+  background: rgba(255, 255, 255, 0.45);
+  border-radius: var(--radius-full);
+  margin: 0 auto 6px auto;
+  flex-shrink: 0;
+}
+
 /* ==========================================================================
-   RESPONSIVE BREAKPOINTS (MOBILE & TABLET OPTIMIZED)
+   RESPONSIVE BREAKPOINTS (MOBILE & TABLET OPTIMIZED: 50% GLOBE + UNCLIPPED NAV)
    ========================================================================== */
 
 @media (max-width: 1200px) {
@@ -1388,24 +1398,36 @@ body.view-3d-mode .mode-toggle-btn {
 }
 
 @media (max-width: 1024px) {
+  .hud-sheet-drag-handle {
+    display: block;
+  }
+
   .hud-spaces-container {
     position: absolute;
     top: auto;
     bottom: 0;
     left: 0;
     right: 0;
-    max-height: 64vh;
+    height: 50vh;
+    max-height: 50vh;
     overflow-y: auto;
     overflow-x: hidden;
     pointer-events: auto;
-    padding: 12px 16px calc(16px + env(safe-area-inset-bottom, 0px)) 16px;
+    padding: 10px 14px calc(14px + env(safe-area-inset-bottom, 0px)) 14px;
     display: flex;
     flex-direction: column;
-    gap: 12px;
+    gap: 10px;
     scrollbar-width: thin;
-    scrollbar-color: rgba(255, 255, 255, 0.2) transparent;
+    scrollbar-color: rgba(255, 255, 255, 0.25) transparent;
     -webkit-overflow-scrolling: touch;
     z-index: 35;
+    background: linear-gradient(180deg, rgba(12, 12, 12, 0.92) 0%, rgba(0, 0, 0, 0.98) 100%);
+    backdrop-filter: blur(24px);
+    -webkit-backdrop-filter: blur(24px);
+    border-top: 1px solid var(--border-card);
+    border-top-left-radius: 20px;
+    border-top-right-radius: 20px;
+    box-shadow: 0 -8px 36px rgba(0, 0, 0, 0.85);
   }
 
   .hud-left-pod, .hud-bottom-deck, .hud-right-pod {
@@ -1425,17 +1447,18 @@ body.view-3d-mode .mode-toggle-btn {
 
   .hud-right-pod {
     height: auto;
-    max-height: 400px;
+    max-height: none;
   }
   
   .globe-hud {
     position: absolute;
     top: auto;
-    bottom: calc(64vh + 10px);
-    left: 16px;
-    right: 16px;
+    bottom: calc(50vh + 10px);
+    left: 14px;
+    right: 14px;
     width: auto;
     justify-content: space-between;
+    z-index: 40;
   }
 
   #main-dashboard.collapsed + .globe-hud,
@@ -1447,13 +1470,18 @@ body.view-3d-mode .mode-toggle-btn {
 @media (max-width: 768px) {
   .top-nav {
     padding: 8px 12px;
-    gap: 8px;
+    gap: 6px;
+    display: flex;
     flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    background: linear-gradient(180deg, rgba(0, 0, 0, 0.85) 0%, rgba(0, 0, 0, 0) 100%);
   }
 
   .brand-badge {
-    padding: 5px 10px;
-    gap: 6px;
+    padding: 5px 8px;
+    gap: 5px;
+    flex-shrink: 0;
   }
 
   .brand-icon {
@@ -1463,13 +1491,14 @@ body.view-3d-mode .mode-toggle-btn {
 
   .brand-text h1 {
     font-size: 13px;
+    white-space: nowrap;
   }
 
   .search-wrapper {
     order: 3;
     width: 100%;
     max-width: 100%;
-    flex: none;
+    flex: 1 1 100%;
     margin-top: 2px;
   }
 
@@ -1482,47 +1511,25 @@ body.view-3d-mode .mode-toggle-btn {
   }
 
   .nav-actions {
-    gap: 4px;
-    overflow-x: auto;
-    scrollbar-width: none;
-    -webkit-overflow-scrolling: touch;
-    max-width: calc(100vw - 140px);
+    display: flex;
+    align-items: center;
     justify-content: flex-end;
-  }
-
-  .nav-actions::-webkit-scrollbar {
-    display: none;
+    gap: 4px;
+    flex-shrink: 0;
+    overflow: visible;
   }
 
   .action-btn {
-    padding: 5px 9px;
+    padding: 5px 7px;
     font-size: 11px;
+    height: 30px;
     gap: 4px;
     white-space: nowrap;
     border-radius: var(--radius-sm);
   }
 
-  .hud-spaces-container {
-    max-height: 60vh;
-    padding: 10px 10px calc(12px + env(safe-area-inset-bottom, 0px)) 10px;
-    gap: 10px;
-  }
-
-  .globe-hud {
-    bottom: calc(60vh + 8px);
-    left: 10px;
-    right: 10px;
-    padding: 0;
-  }
-
-  .globe-hud-pill {
-    padding: 4px 8px;
-    font-size: 10px;
-  }
-
-  .globe-ctrl-btn {
-    padding: 4px 8px;
-    font-size: 10px;
+  .action-label {
+    display: none; /* Hide button text labels on mobile so all 5 options fit side-by-side without any cutoff */
   }
 
   .hud-pod-inner {
@@ -1536,15 +1543,30 @@ body.view-3d-mode .mode-toggle-btn {
 
 @media (max-width: 480px) {
   .top-nav {
-    padding: 6px 10px;
+    padding: 6px 8px;
+    gap: 4px;
+  }
+
+  .brand-badge {
+    padding: 4px 6px;
   }
 
   .brand-text h1 {
     font-size: 12px;
   }
 
-  .action-btn span {
-    font-size: 10.5px;
+  .nav-actions {
+    gap: 3px;
+  }
+
+  .action-btn {
+    padding: 4px 6px;
+    height: 28px;
+  }
+
+  .action-btn svg {
+    width: 13px;
+    height: 13px;
   }
 
   .location-city {
@@ -1574,7 +1596,7 @@ body.view-3d-mode .mode-toggle-btn {
   }
 
   #temp-value {
-    font-size: 30px;
+    font-size: 28px;
   }
 
   .temp-apparent {
@@ -1622,8 +1644,8 @@ body.view-3d-mode .mode-toggle-btn {
   }
 
   .hourly-card {
-    min-width: 58px;
-    padding: 6px 6px;
+    min-width: 56px;
+    padding: 6px 4px;
   }
 
   .daily-item {
@@ -1631,12 +1653,12 @@ body.view-3d-mode .mode-toggle-btn {
   }
 
   .daily-day {
-    font-size: 10.5px;
-    width: 32px;
+    font-size: 10px;
+    width: 30px;
   }
 
   .solar-3d-canvas {
-    width: 75px;
-    height: 28px;
+    width: 70px;
+    height: 26px;
   }
 }
