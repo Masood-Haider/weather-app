@@ -589,27 +589,33 @@ const ThreeWeatherFX = (function() {
     isFog = false;
     isSunny = false;
 
-    if (info.category === "rain") {
-      isRain = true;
-    } else if (info.category === "thunderstorm") {
-      isRain = true;
-      isStorm = true;
-    } else if (info.category === "snow") {
-      // Differentiate intense horizontal blizzard vs gentle snowfall
-      if (code === 75 || code === 86 || (windSpeed || 0) > 30) {
+    // 1. FREEZING COLD & SNOW CONDITIONS (Sub-zero or Snow WMO codes)
+    if (temp <= 0 || info.category === "snow" || code === 71 || code === 73 || code === 75 || code === 77 || code === 85 || code === 86) {
+      if (code === 75 || code === 86 || (windSpeed || 0) > 28) {
         isBlizzard = true;
       } else {
         isSnow = true;
       }
-    } else if (info.category === "clouds" && (code === 45 || code === 48)) {
+    } 
+    // 2. RAIN & STORMS
+    else if (info.category === "rain") {
+      isRain = true;
+    } else if (info.category === "thunderstorm") {
+      isRain = true;
+      isStorm = true;
+    } 
+    // 3. FOG & MIST
+    else if (info.category === "clouds" && (code === 45 || code === 48)) {
       isFog = true;
-    } else if (info.category === "clear" || code === 0 || code === 1) {
-      if (isDay) {
+    } 
+    // 4. WARM CLEAR / SUNNY SKY
+    else if (info.category === "clear" || code === 0 || code === 1) {
+      if (isDay && temp > 0) {
         isSunny = true;
       }
     }
 
-    // High Heat Shimmer Waves (hot days >= 30C, strictly when not raining or snowing)
+    // 5. High Heat Shimmer Waves (hot days >= 30C, strictly when warm and dry)
     if (temp >= 30 && !isRain && !isSnow && !isBlizzard) {
       isHeat = true;
     }
@@ -1331,18 +1337,18 @@ const ProceduralAudio = (function() {
       startDynamicWindSound(windSpeed);
     }
 
-    // 2. Weather Specific Audio Synthesis
-    if (info.category === "rain") {
-      startRainSound(code);
-    } else if (info.category === "thunderstorm") {
-      startRainSound(code);
-      startStormAmbience();
-    } else if (info.category === "snow") {
-      if (code === 75 || code === 86 || windSpeed > 30) {
+    // 2. Weather & Temperature Specific Audio Synthesis
+    if (temp <= 0 || info.category === "snow" || code === 71 || code === 73 || code === 75 || code === 77 || code === 85 || code === 86) {
+      if (code === 75 || code === 86 || windSpeed > 28) {
         startBlizzardSound();
       } else {
         startSnowSound();
       }
+    } else if (info.category === "rain") {
+      startRainSound(code);
+    } else if (info.category === "thunderstorm") {
+      startRainSound(code);
+      startStormAmbience();
     } else if (info.category === "clear" || code === 0 || code === 1) {
       if (temp >= 30) {
         startHeatAmbience();
