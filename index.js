@@ -295,39 +295,82 @@ const ThreeWeatherFX = (function() {
     scene.add(rainPoints);
   }
 
-  // 2. SOFT SNOW SYSTEM
+  // 2. REALISTIC CRYSTALLINE SNOWFLAKE SYSTEM
   function createSnowSystem() {
-    const count = 1200;
+    const count = 1600;
     snowGeo = new THREE.BufferGeometry();
     const positions = new Float32Array(count * 3);
     const wander = new Float32Array(count);
+    const fallSpeeds = new Float32Array(count);
 
     for (let i = 0; i < count; i++) {
       positions[i * 3] = (Math.random() - 0.5) * 320;
       positions[i * 3 + 1] = Math.random() * 200 - 100;
       positions[i * 3 + 2] = (Math.random() - 0.5) * 150;
       wander[i] = Math.random() * Math.PI * 2;
+      fallSpeeds[i] = 0.45 + Math.random() * 0.55;
     }
 
     snowGeo.setAttribute("position", new THREE.BufferAttribute(positions, 3));
     snowGeo.setAttribute("wander", new THREE.BufferAttribute(wander, 1));
+    snowGeo.setAttribute("fallSpeed", new THREE.BufferAttribute(fallSpeeds, 1));
 
+    // High-Resolution 6-Branch Dendrite Crystalline Snowflake Texture
     const canvas = document.createElement("canvas");
-    canvas.width = 32;
-    canvas.height = 32;
+    canvas.width = 64;
+    canvas.height = 64;
     const ctx = canvas.getContext("2d");
-    const radGrad = ctx.createRadialGradient(16, 16, 0, 16, 16, 16);
-    radGrad.addColorStop(0, "rgba(255, 255, 255, 0.95)");
-    radGrad.addColorStop(0.5, "rgba(255, 255, 255, 0.4)");
-    radGrad.addColorStop(1, "rgba(255, 255, 255, 0)");
-    ctx.fillStyle = radGrad;
+    ctx.translate(32, 32);
+
+    // Subtle optical crystal core glow
+    const rad = ctx.createRadialGradient(0, 0, 0, 0, 0, 24);
+    rad.addColorStop(0, "rgba(255, 255, 255, 0.95)");
+    rad.addColorStop(0.35, "rgba(240, 248, 255, 0.65)");
+    rad.addColorStop(0.8, "rgba(240, 248, 255, 0.15)");
+    rad.addColorStop(1, "rgba(255, 255, 255, 0)");
+    ctx.fillStyle = rad;
     ctx.beginPath();
-    ctx.arc(16, 16, 16, 0, Math.PI * 2);
+    ctx.arc(0, 0, 24, 0, Math.PI * 2);
     ctx.fill();
+
+    // 6-Point Dendritic Crystal Arms
+    ctx.strokeStyle = "rgba(255, 255, 255, 0.95)";
+    ctx.lineWidth = 1.6;
+    ctx.lineCap = "round";
+
+    for (let i = 0; i < 6; i++) {
+      ctx.save();
+      ctx.rotate((i * Math.PI) / 3);
+
+      // Main arm
+      ctx.beginPath();
+      ctx.moveTo(0, 0);
+      ctx.lineTo(0, 22);
+      ctx.stroke();
+
+      // Lower branches
+      ctx.beginPath();
+      ctx.moveTo(0, 7);
+      ctx.lineTo(5, 12);
+      ctx.moveTo(0, 7);
+      ctx.lineTo(-5, 12);
+      ctx.stroke();
+
+      // Upper branches
+      ctx.beginPath();
+      ctx.moveTo(0, 14);
+      ctx.lineTo(4, 18);
+      ctx.moveTo(0, 14);
+      ctx.lineTo(-4, 18);
+      ctx.stroke();
+
+      ctx.restore();
+    }
+
     const snowTex = new THREE.CanvasTexture(canvas);
 
     snowMaterial = new THREE.PointsMaterial({
-      size: 4.5,
+      size: 3.2,
       map: snowTex,
       transparent: true,
       opacity: 0,
@@ -339,9 +382,9 @@ const ThreeWeatherFX = (function() {
     scene.add(snowPoints);
   }
 
-  // 3. BLIZZARD & GALE VORTEX SYSTEM
+  // 3. REALISTIC BLIZZARD & ICE NEEDLE GALE SYSTEM
   function createBlizzardSystem() {
-    const count = 1800;
+    const count = 2200;
     blizzardGeo = new THREE.BufferGeometry();
     const positions = new Float32Array(count * 3);
     const speeds = new Float32Array(count);
@@ -350,26 +393,29 @@ const ThreeWeatherFX = (function() {
       positions[i * 3] = (Math.random() - 0.5) * 350;
       positions[i * 3 + 1] = (Math.random() - 0.5) * 220;
       positions[i * 3 + 2] = (Math.random() - 0.5) * 160;
-      speeds[i] = 4.0 + Math.random() * 5.0;
+      speeds[i] = 4.5 + Math.random() * 6.0;
     }
 
     blizzardGeo.setAttribute("position", new THREE.BufferAttribute(positions, 3));
     blizzardGeo.setAttribute("speed", new THREE.BufferAttribute(speeds, 1));
 
+    // Fine aerodynamic wind flurry streak
     const canvas = document.createElement("canvas");
-    canvas.width = 32;
-    canvas.height = 16;
+    canvas.width = 48;
+    canvas.height = 12;
     const ctx = canvas.getContext("2d");
-    const grad = ctx.createLinearGradient(0, 8, 32, 8);
+    const grad = ctx.createLinearGradient(0, 6, 48, 6);
     grad.addColorStop(0, "rgba(255, 255, 255, 0)");
+    grad.addColorStop(0.3, "rgba(255, 255, 255, 0.4)");
     grad.addColorStop(0.5, "rgba(255, 255, 255, 0.95)");
+    grad.addColorStop(0.7, "rgba(255, 255, 255, 0.4)");
     grad.addColorStop(1, "rgba(255, 255, 255, 0)");
     ctx.fillStyle = grad;
-    ctx.fillRect(0, 5, 32, 6);
+    ctx.fillRect(0, 4, 48, 4);
     const blizTex = new THREE.CanvasTexture(canvas);
 
     blizzardMaterial = new THREE.PointsMaterial({
-      size: 5.0,
+      size: 4.2,
       map: blizTex,
       transparent: true,
       opacity: 0,
@@ -596,11 +642,12 @@ const ThreeWeatherFX = (function() {
     if (snowMaterial.opacity > 0.01) {
       const pos = snowGeo.attributes.position.array;
       const wander = snowGeo.attributes.wander.array;
+      const fallSpeeds = snowGeo.attributes.fallSpeed.array;
       for (let i = 0; i < pos.length / 3; i++) {
-        wander[i] += 0.02;
-        pos[i * 3 + 1] -= 0.6 * windSpeedScalar;
-        pos[i * 3] += Math.sin(wander[i]) * 0.4 + windTilt * 0.5;
-        pos[i * 3 + 2] += Math.cos(wander[i]) * 0.3;
+        wander[i] += 0.015;
+        pos[i * 3 + 1] -= fallSpeeds[i] * windSpeedScalar;
+        pos[i * 3] += Math.sin(wander[i]) * 0.35 + windTilt * 0.6;
+        pos[i * 3 + 2] += Math.cos(wander[i]) * 0.25;
         if (pos[i * 3 + 1] < -100) {
           pos[i * 3 + 1] = 100;
           pos[i * 3] = (Math.random() - 0.5) * 320;
