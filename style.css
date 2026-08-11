@@ -205,7 +205,7 @@ body.view-3d-mode #globe-container {
 }
 
 .leaflet-top {
-  top: 125px !important;
+  top: 90px !important;
 }
 
 .leaflet-control-zoom {
@@ -664,7 +664,7 @@ body.view-3d-mode .mode-toggle-btn {
   font-weight: 700;
 }
 
-/* Quick City Preset Chips / Buttons */
+/* Quick City Preset Chips */
 .quick-chips-bar {
   display: flex;
   align-items: center;
@@ -672,9 +672,8 @@ body.view-3d-mode .mode-toggle-btn {
   overflow-x: auto;
   padding: 6px 2px;
   max-width: 1520px;
-  margin: 8px auto 0 auto;
+  margin: 10px auto 0 auto;
   scrollbar-width: none;
-  z-index: 20;
 }
 
 .quick-chips-bar::-webkit-scrollbar {
@@ -707,16 +706,16 @@ body.view-3d-mode .mode-toggle-btn {
 }
 
 /* ==========================================================================
-   MONOCHROME WEATHER DASHBOARD CARD (COMPACT & DIVIDED TABS)
+   MONOCHROME WEATHER DASHBOARD CARD
    ========================================================================== */
 
 .main-dashboard {
   position: absolute;
   right: 22px;
-  top: 125px;
-  width: 380px;
+  top: 98px;
+  bottom: 22px;
+  width: 460px;
   max-width: calc(100vw - 44px);
-  max-height: calc(100vh - 145px);
   display: flex;
   flex-direction: column;
   z-index: 25;
@@ -730,7 +729,7 @@ body.view-3d-mode .mode-toggle-btn {
 
 .dashboard-toggle-btn {
   position: absolute;
-  top: 125px;
+  top: 98px;
   right: 22px;
   z-index: 26;
   background: var(--bg-surface);
@@ -757,76 +756,6 @@ body.view-3d-mode .mode-toggle-btn {
 
 .main-dashboard.collapsed + .dashboard-toggle-btn {
   display: flex;
-}
-
-/* Dashboard Segmented Tabs */
-.dashboard-tabs {
-  display: flex;
-  background: #0d0d0d;
-  border-bottom: 1px solid var(--border-card);
-  padding: 5px;
-  gap: 4px;
-  z-index: 6;
-}
-
-.dash-tab-btn {
-  flex: 1;
-  background: transparent;
-  border: none;
-  color: #888888;
-  font-family: var(--font-body);
-  font-size: 11px;
-  font-weight: 600;
-  padding: 6px 2px;
-  border-radius: var(--radius-sm);
-  cursor: pointer;
-  transition: var(--transition-fast);
-  text-align: center;
-  text-transform: uppercase;
-  letter-spacing: 0.03em;
-}
-
-.dash-tab-btn:hover {
-  color: #ffffff;
-  background: rgba(255, 255, 255, 0.06);
-}
-
-.dash-tab-btn.active {
-  background: #ffffff;
-  color: #000000;
-  font-weight: 800;
-}
-
-.tab-pane {
-  display: none;
-  flex-direction: column;
-  gap: 14px;
-  animation: tabFade 0.22s ease-in-out;
-}
-
-.tab-pane.active {
-  display: flex;
-}
-
-@keyframes tabFade {
-  from { opacity: 0; transform: translateY(4px); }
-  to { opacity: 1; transform: translateY(0); }
-}
-
-.tab-pane-header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding-bottom: 6px;
-  border-bottom: 1px solid var(--border-subtle);
-}
-
-.tab-pane-title {
-  font-size: 12px;
-  font-weight: 700;
-  color: #ffffff;
-  text-transform: uppercase;
-  letter-spacing: 0.04em;
 }
 
 /* Card Container */

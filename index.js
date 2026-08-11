@@ -460,27 +460,25 @@ const ThreeGlobe = (function() {
     // City Pin Beacon
     createCityPin();
 
-    // Pointer drag vs click tracking
-    let pointerDownPos = { x: 0, y: 0 };
-    let pointerDownTime = 0;
+    // Single Click vs Drag Detection
+    let isDragging = false;
+    let startX = 0;
+    let startY = 0;
 
     canvas.addEventListener("pointerdown", (e) => {
-      pointerDownPos.x = e.clientX;
-      pointerDownPos.y = e.clientY;
-      pointerDownTime = performance.now();
+      isDragging = false;
+      startX = e.clientX;
+      startY = e.clientY;
+    });
+
+    canvas.addEventListener("pointermove", (e) => {
+      if (Math.hypot(e.clientX - startX, e.clientY - startY) > 6) {
+        isDragging = true;
+      }
     });
 
     canvas.addEventListener("pointerup", (e) => {
-      if (isFlying || !camera || !renderer) return;
-
-      const dx = e.clientX - pointerDownPos.x;
-      const dy = e.clientY - pointerDownPos.y;
-      const dist = Math.sqrt(dx * dx + dy * dy);
-      const elapsed = performance.now() - pointerDownTime;
-
-      // Allow natural single-click tolerance (dist <= 14px and elapsed <= 550ms)
-      if (dist > 14 || elapsed > 550) return;
-
+      if (isDragging || isFlying || !camera || !renderer) return;
       onGlobeSelect(e);
     });
 
@@ -731,7 +729,7 @@ const ThreeGlobe = (function() {
     mouse.y = -((event.clientY - rect.top) / rect.height) * 2 + 1;
 
     raycaster.setFromCamera(mouse, camera);
-    const intersects = raycaster.intersectObjects([earthMesh, atmosphereMesh, cloudMesh].filter(Boolean));
+    const intersects = raycaster.intersectObject(earthMesh);
 
     if (intersects.length > 0) {
       const point = intersects[0].point;
@@ -1775,20 +1773,7 @@ function setupEventListeners() {
     });
   });
 
-  // 10. Dashboard Tab Switching
-  document.querySelectorAll(".dash-tab-btn").forEach((btn) => {
-    btn.addEventListener("click", () => {
-      const tabId = btn.dataset.tab;
-      document.querySelectorAll(".dash-tab-btn").forEach(b => b.classList.remove("active"));
-      document.querySelectorAll(".tab-pane").forEach(p => p.classList.remove("active"));
-
-      btn.classList.add("active");
-      const targetPane = document.getElementById(`tab-${tabId}`);
-      if (targetPane) targetPane.classList.add("active");
-    });
-  });
-
-  // 11. Quick City Preset Chips
+  // 10. City Chips Click Handlers
   document.querySelectorAll(".city-chip").forEach((chip) => {
     chip.addEventListener("click", () => {
       const lat = parseFloat(chip.dataset.lat);
